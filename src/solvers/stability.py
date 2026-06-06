@@ -28,6 +28,7 @@ class StabilitySolver():
             pos = self.model.spring_pos[i]
             sec = self.model.sections[node]
             ez  = sec.z_from_ref(1, pos)
+            #ez = -sec.z_from_ref(self.model.node_align[node], pos)
 
             K0_ltr[dof_v,  dof_v]  += kv
             K0_ltr[dof_v,  dof_t]  -= kv * ez   # acoplamiento (estudiar mejor el cambio de signo)

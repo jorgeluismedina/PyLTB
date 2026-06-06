@@ -1,6 +1,5 @@
 
 import numpy as np
-from abc import ABC, abstractmethod
 
 class Beam():
     def __init__(self, mater, coords, conec, vrx_dofs, ltr_dofs):

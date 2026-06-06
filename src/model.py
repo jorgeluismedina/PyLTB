@@ -168,9 +168,9 @@ class StabilityModel():
         """
         Cargas distribuidas de elemento en coordenadas locales.
  
-        Formato: [id_elem, qzpos, qxpos, qxez, qzez, qxi, qzi, qxj, qzj]
-            qzpos : altura de qz — 0→G, 1→SC, 2→ala inf, 3→ala sup
-            qxpos : altura de qx — mismos códigos
+        Formato: [id_elem, qxpos, qzpos, qxez, qzez, qxi, qzi, qxj, qzj]
+            qxpos : altura de qz — 0→G, 1→SC, 2→ala inf, 3→ala sup
+            qzpos : altura de qx — mismos códigos
             qxi, qzi : intensidades en nodo i (axial, transversal)
             qxj, qzj : intensidades en nodo j (axial, transversal)
         """

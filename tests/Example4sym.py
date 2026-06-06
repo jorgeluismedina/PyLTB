@@ -43,6 +43,7 @@ norm_coords = coordinates / L
 
 # Generacion de secciones
 node_sections = interpolate_multiple_sections(section_min, section_max, norm_coords)
+#node_sections = interpolate_multiple_sections(section_max, section_min, norm_coords)
 
 
 # Informacion de elementos
@@ -148,9 +149,9 @@ plot_diagram(model, V_diag,    title="Shear force")
 plot_diagram(model, M_diag,    title="Bending moment")
 plot_deformed(model, def_shapes, title="Deformed shape")
 
-# Problema de estabilid
+# Problema de estabilidad
 plot_buckling_modes(model, stabi.mu_crs, stabi.modes, nmodes=2)
-plot_buckling_mode_3d(model, stabi.mu_crs, stabi.modes, imode=0, scale=0.12, n_sec=3)
+plot_buckling_mode_3d(model, stabi.mu_crs, stabi.modes, imode=0, scale=0.12, n_sec=2)
 
 plt.show()
 #"""

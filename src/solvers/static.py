@@ -29,7 +29,7 @@ class StaticSolver():
                 self.model.loaded_nodes, 
                 self.model.nodal_loads
             )
-            F[dofs] = vals
+            F[dofs] += vals
 
             for i, node in enumerate(self.model.loaded_nodes):
                 dof_Mx = self.model.avrx_dofs[node, 2]

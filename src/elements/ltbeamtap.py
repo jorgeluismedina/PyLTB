@@ -53,7 +53,7 @@ class LTBeamTap(Beam):
     def interpolate_at_gauss(self, xi):
         """Interpola sección en punto de Gauss y añade inercias del taper."""
         L     = self.length
-        dx    = 1e-3        # 1 mm — paso para diferenciacion numerica
+        dx    = 1e-2        # 10 mm — paso para diferenciacion numerica
         delta = dx / L
         
         gsec      = interpolate_section(self.section_i, self.section_j, xi)
@@ -311,12 +311,12 @@ class LTBeamTap(Beam):
         dNh = dN_hermite(xi)    # (4, n_points)
 
         # Fuerzas internas del elemento
-        Ni = -self.forcesG[0] 
-        Vi =  self.forcesG[1]
-        Mi = -self.forcesG[2]
-        Nj =  self.forcesG[3]
-        Vj = -self.forcesG[4]
-        Mj =  self.forcesG[5]
+        Ni = -self.forces[0] 
+        Vi = -self.forces[1] # Vi =  self.forcesG[1]
+        Mi = -self.forces[2]
+        Nj =  self.forces[3]
+        Vj =  self.forces[4] # Vj = -self.forcesG[4]
+        Mj =  self.forces[5]
 
         # Diagrama de axil (lineal)
         N_diag = (1 - xi) * Ni + xi * Nj

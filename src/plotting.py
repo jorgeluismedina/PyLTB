@@ -14,7 +14,7 @@ _BEAM_COLOR     = '#888888'   # eje / viga no deformada 2D
 _DIAGRAM_COLOR  = '#0000ff'   # diagramas de esfuerzos
 _DEFORMED_COLOR = '#0000ff'   # deformada estática
 _CRIT_COLOR     = '#f00000'   # etiquetas de valores críticos
-_MODE_COLORS    = ['#f00000', '#0000ff', "#01B701", '#000000']  # v, v', θ, θ'
+_MODE_COLORS    = ['#f00000', '#0000ff', '#000000', "#01B701", ]  # v, v', θ, θ'
 _BEAM3D_COLOR   = '#0000ff'   # secciones deformadas 3D
 _UNDEF_COLOR    = '#888888'   # viga no deformada 3D
  
@@ -296,10 +296,10 @@ def plot_buckling_mode_3d(model, mu_crs, modes, imode=0, scale=1.0, n_sec=5):
                 yz_def = deform_segment(seg, v_arr[k], th_arr[k], zS)
 
                 ax.plot([x_k, x_k], seg[:, 0], seg[:, 1],
-                        color=_UNDEF_COLOR, lw=0.5, alpha=1)
+                        color=_UNDEF_COLOR, lw=0.3, alpha=1)
 
                 ax.plot([x_k, x_k], yz_def[:, 0], yz_def[:, 1],
-                        color=_BEAM3D_COLOR, lw=0.5, alpha=1)
+                        color=_BEAM3D_COLOR, lw=0.3, alpha=1)
  
             
             # Puntos característicos de la sección
@@ -327,12 +327,12 @@ def plot_buckling_mode_3d(model, mu_crs, modes, imode=0, scale=1.0, n_sec=5):
             color = "purple" if j == 6 else _UNDEF_COLOR
             color = "green" if j == 7 else _UNDEF_COLOR
             ax.plot(pts[:, 0], pts[:, 1], pts[:, 2],
-                    color=color, lw=0.5, alpha=1)
+                    color=color, lw=0.3, alpha=1)
 
         for j in range(keypoints_def.shape[1]):
             pts = keypoints_def[:, j, :]
             ax.plot(pts[:, 0], pts[:, 1], pts[:, 2],
-                    color=_BEAM3D_COLOR, lw=0.5, alpha=1)
+                    color=_BEAM3D_COLOR, lw=0.3, alpha=1)
  
     # Trípode de ejes
     #arrow_len = (model.coords[-1] - model.coords[0]) * 0.05
