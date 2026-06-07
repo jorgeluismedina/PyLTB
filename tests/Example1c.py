@@ -29,7 +29,7 @@ section2 = ISection_MS(h=0.305, bf1=0.18, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.0
 
 
 # ----- CONSTRUCCION DE LA MALLA --------
-idx = 2                        # índice de longitud a analizar
+idx = 1                        # índice de longitud a analizar
 Ls  = np.array([2, 4, 6, 8, 10])
 L   = Ls[idx]
 
@@ -65,7 +65,8 @@ lator_restraints = np.array([
 # sobre el ala superior → pos=3
 # sobre el ala superior → pos=3
 nodal_loads = np.array([
-    [nelems,  3, 3,   0.0, 0.0,   -1000.0, -1000.0, 0.0]  
+    #[nelems,  3, 3,   0.0, 0.0,   -1e3, -1e3, 0.0]  
+    [nelems,  3, 3,   0.0, 0.0,   -10e3, -5e3, 0.0]
 ])
 
 
@@ -74,7 +75,7 @@ model = StabilityModel()
 model.add_materials(materials)
 model.add_sections(node_sections)
 model.add_nodes(coordinates)
-model.add_tapered_elements(elements_data, align=3)
+model.add_tapered_elements(elements_data, align=0)
 model.add_verax_restraints(verax_restraints)
 model.add_lator_restraints(lator_restraints)
 model.add_nodal_loads(nodal_loads)
@@ -95,10 +96,6 @@ stabi = StabilitySolver(model)
 stabi.solve()
 mu_cr = stabi.mu_crs[0]
 
-# Resultados y comparacion
-mu_cr_ref     = [173.30, 44.55, 22.69, 13.95, 9.31]
-mu_cr_ltbeamn = [176.50, 45.10, 22.83, 13.97, 9.30] # del articulo de Beyer, 2015
-mu_cr_ltbeamn = [171.87, 44.23, 22.50, 13.82, 9.22] # con el programa
 
 print("\n" + "="*55)
 print(" ANALYSIS RESULTS ".center(55))
@@ -117,10 +114,10 @@ print(f"  Displacement max. w_max:         {maxw*1e3:>16.4f} mm")
 print("\n STABILITY ANALYSIS")
 print(f"  Lenght (L):                             {L:>11.2f} m")
 print(f"  Critical load factor μ_cr (PyLTB):      {mu_cr:>12.4f}")
-print(f"  Critical load factor μ_cr (Reference):  {mu_cr_ref[idx]:>12.4f}")
-print(f"  Critical load factor μ_cr (LTBeamN):    {mu_cr_ltbeamn[idx]:>12.4f}")
-print(f"  Result diff. with Reference:            {abs(mu_cr - mu_cr_ref[idx])/mu_cr_ref[idx]*100:>11.2f} %")
-print(f"  Result diff. with LTBeamN:              {abs(mu_cr - mu_cr_ltbeamn[idx])/mu_cr_ltbeamn[idx]*100:>11.2f} %")
+#print(f"  Critical load factor μ_cr (Reference):  {mu_cr_ref[idx]:>12.4f}")
+#print(f"  Critical load factor μ_cr (LTBeamN):    {mu_cr_ltbeamn[idx]:>12.4f}")
+#print(f"  Result diff. with Reference:            {abs(mu_cr - mu_cr_ref[idx])/mu_cr_ref[idx]*100:>11.2f} %")
+#print(f"  Result diff. with LTBeamN:              {abs(mu_cr - mu_cr_ltbeamn[idx])/mu_cr_ltbeamn[idx]*100:>11.2f} %")
 print("\n" + "="*55 + "\n")
 #'''
 
@@ -134,11 +131,11 @@ N_diag, V_diag, M_diag, def_shapes = static.prepare_diagrams()
 plot_diagram(model, N_diag,    title="Axial force")
 plot_diagram(model, V_diag,    title="Shear force")
 plot_diagram(model, M_diag,    title="Bending moment")
-plot_deformed(model, def_shapes, title="Deformed shape")
+#plot_deformed(model, def_shapes, title="Deformed shape")
 
 # Problema de estabilid
-plot_buckling_modes(model, stabi.mu_crs, stabi.modes, nmodes=2)
-plot_buckling_mode_3d(model, stabi.mu_crs, stabi.modes, imode=0, scale=0.015, n_sec=5)
+#plot_buckling_modes(model, stabi.mu_crs, stabi.modes, nmodes=2)
+#plot_buckling_mode_3d(model, stabi.mu_crs, stabi.modes, imode=0, scale=0.015, n_sec=5)
 
 plt.show()
 #"""

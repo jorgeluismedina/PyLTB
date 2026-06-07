@@ -194,8 +194,8 @@ class LTBeamTap(Beam):
         L = self.length
         
         N1 = -self.forcesG[0] # Axial izquierda
+        M1 = -self.forcesG[2] # Momento izquierd
         N2 =  self.forcesG[3] # Axial derecha
-        M1 = -self.forcesG[2] # Momento izquierda
         M2 =  self.forcesG[5]  # Momento derecha
         V_z = (M1 - M2) / L  # Cortante
 
@@ -312,10 +312,10 @@ class LTBeamTap(Beam):
 
         # Fuerzas internas del elemento
         Ni = -self.forces[0] 
-        Vi = -self.forces[1] # Vi =  self.forcesG[1]
+        Vi = -self.forces[1]
         Mi = -self.forces[2]
         Nj =  self.forces[3]
-        Vj =  self.forces[4] # Vj = -self.forcesG[4]
+        Vj =  self.forces[4]
         Mj =  self.forces[5]
 
         # Diagrama de axil (lineal)
