@@ -95,7 +95,7 @@ def run_cases(section_type, node_sections, cases, mu_cr_ref):
     print(f"\n{'─'*130}")
     print(f" {section_type} ".center(130))
     print(f"{'─'*130}")
-    print(f"{'#':<3} {'Align':<6} {'Carga':<47} {'mu_cr (PyLTB)':>15} {'mu_cr (LTBeamN)':>15} {'Diff (%)':>10} {'M_i (kNm)':>12} {'M_j (kNm)':>12}")
+    print(f"{'#':<3} {'Align':<6} {'Carga':<47} {'μ_cr (PyLTB)':>15} {'μ_cr (LTBeamN)':>15} {'Diff (%)':>10} {'M_i (kNm)':>12} {'M_j (kNm)':>12}")
     print(f"{'─'*130}")
     
     results = []
@@ -140,6 +140,11 @@ def run_cases(section_type, node_sections, cases, mu_cr_ref):
 
 # ----------------------------------------------------------------------
 # Ejecutar ambas tandas
+print("\n" + "="*130)
+print(" TAPERED CANTILIVER – SYSTEMATIC TEST (TIP LOADS) ".center(130))
+print("="*130)
+print(" Longitud = 4 m, cargas axial y vertical puntuales".center(130))
+print("="*130)
 results_bi   = run_cases("BISYMMETRIC SECTIONS", node_sections_bi, cases_bi, mu_cr_ltbeamn_bi)
 results_mono = run_cases("MONOSYMMETRIC SECTIONS", node_sections_mono, cases_mono, mu_cr_ltbeamn_mono)
 

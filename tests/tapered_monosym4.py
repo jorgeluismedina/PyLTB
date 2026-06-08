@@ -26,16 +26,18 @@ material1 = Material(E=2.1e11, nu=0.3, dens=1.0) #[N/m2]
 materials = [material1]
 
 # Secciones
-section1 = ISection_MS(h=0.1, bf1=0.20, bf2=0.08, tw=0.01, tf1=0.01, tf2=0.01, r1=0.00, r2=0.00) #[m]
-section2 = ISection_MS(h=0.3, bf1=0.20, bf2=0.08, tw=0.01, tf1=0.01, tf2=0.01, r1=0.00, r2=0.00) #[m]
+#section1 = ISection_MS(h=0.1, bf1=0.20, bf2=0.08, tw=0.01, tf1=0.01, tf2=0.01, r1=0.00, r2=0.00) #[m]
+#section2 = ISection_MS(h=0.3, bf1=0.20, bf2=0.08, tw=0.01, tf1=0.01, tf2=0.01, r1=0.00, r2=0.00) #[m]
 
-
+# Secciones bisimétricas
+section1 = ISection_MS(h=0.61, bf1=0.18, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00)
+section2 = ISection_MS(h=0.305, bf1=0.18, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00)
 
 
 
 # ----- CONSTRUCCION DE LA MALLA --------
-L = 4 #[m]
-nelems = 20 
+L = 4.5 #[m]
+nelems = 36 
 
 # Coordenadas de nodos
 coordinates = np.linspace(0, L, nelems+1)
@@ -44,16 +46,8 @@ norm_coords = coordinates / L
 # Generacion de secciones
 node_sections = interpolate_multiple_sections(section1, section2, norm_coords)
 
-
-
-
 # Informacion de elementos
-elements_data = []
-for e in range(nelems):
-    # formato: [etype, mat_id, nodei, nodej]
-    elements_data.append([1, 0, e, e+1])
-
-elements_data = np.array(elements_data)
+elements_data = np.array([[1, 0, e, e+1] for e in range(nelems)])
 
 
 # ----- RESTRICCIONES --------
@@ -67,13 +61,18 @@ lator_restraints = np.array([
     [nelems,  1, 0, 1, 0]
 ])
 
+# ----- CARGAS NODALES --------
+# Axial compresion en el medio del vano
+nodal_loads = np.array([
+    [nelems//2, 3, 3,   0.0, 0.0,   -10e3, 0.0, 0.0]
+])
 
 # ----- CARGAS DE ELEMENTO --------
 # Carga distribuida uniforme unitaria
-elem_loads = []
-for e in range(nelems):
-    elem_loads.append([e, 0, 3,   0.0, 0.0,    0.0, -1000.0, 0.0, -1000.0])
-elem_loads = np.array(elem_loads)
+#elem_loads = []
+#for e in range(nelems):
+#    elem_loads.append([e, 0, 3,   0.0, 0.0,    0.0, -1000.0, 0.0, -1000.0])
+#elem_loads = np.array(elem_loads)
 
 
 # ----- CREACION Y SETEO DEL MODELO -------- 
@@ -81,10 +80,11 @@ model = StabilityModel()
 model.add_materials(materials)
 model.add_sections(node_sections)
 model.add_nodes(coordinates)
-model.add_tapered_elements(elements_data)
+model.add_tapered_elements(elements_data, align=3)
 model.add_verax_restraints(verax_restraints)
 model.add_lator_restraints(lator_restraints)
-model.add_elem_loads(elem_loads)
+model.add_nodal_loads(nodal_loads)
+#model.add_elem_loads(elem_loads)
 
 
 # ----- RESOLUCION DEL MODELO --------
@@ -99,7 +99,7 @@ stabi.solve()
 mu_cr = stabi.mu_crs[0]
 
 # Resultados y comparacion
-mu_cr_ltbeamn = 80.54
+mu_cr_ltbeamn = 166.98
 
 print("\n" + "="*55)
 print(" ANALYSIS RESULTS ".center(55))
@@ -135,7 +135,7 @@ plot_deformed(model, def_shapes, title="Deformed shape")
 
 # Problema de estabilidad
 plot_buckling_modes(model, stabi.mu_crs, stabi.modes, nmodes=2)
-plot_buckling_mode_3d(model, stabi.mu_crs, stabi.modes, imode=0, scale=0.14, n_sec=3)
+plot_buckling_mode_3d(model, stabi.mu_crs, stabi.modes, imode=0, scale=0.14, n_sec=2)
 
 plt.show()
 #"""

@@ -249,7 +249,7 @@ def draw_axis_arrows(ax, x0, y0, z0, length):
 
 
 
-def plot_buckling_mode_3d(model, mu_crs, modes, imode=0, scale=1.0, n_sec=5):
+def plot_buckling_mode_3d(model, mu_crs, modes, imode=0, scale=1.0, n_sec=2):
     mode   = modes[:, imode]
 
     peak = np.max(np.abs(mode[0::4]))

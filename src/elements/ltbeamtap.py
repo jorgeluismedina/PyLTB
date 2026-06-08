@@ -22,13 +22,14 @@ class LTBeamTap(Beam):
         self.gpoints, self.gweights = gauss_1d(4)
 
         # Inicializar matrices de rigidez y geometricas
+        self.T_vrx  = self.compute_verax_T()
         self.K0_vrx, self.K0_ltr = self.compute_K0_matrices()
-        self.Kg_ltr = np.zeros((8, 8))
+        self.Kg_ltr = np.zeros((8, 8))      
 
         # Solo problema estatico
         self.loads   = np.zeros(6)
         self.forces  = np.zeros(6)
-        self.forcesG = np.zeros(6)
+        #self.forcesG = np.zeros(6)
         self.disps   = np.zeros(6)
         
         self.load_ints = np.zeros(4, dtype=float)
@@ -91,6 +92,19 @@ class LTBeamTap(Beam):
         vec_t[3::4] = N[1::2] * L          
 
         return vec_dv, vec_t, vec_dt
+    
+
+    def compute_verax_T(self):
+        """ Matriz transformacion de DOFs centroidales a DOFs del eje de ref.(6x6)"""
+        # u_ref = T @ u_centroid
+        # e positiva si el eje de referencia está por encima del centroide
+        ei = -self.section_i.z_from_ref(self.align, 0)
+        ej = -self.section_j.z_from_ref(self.align, 0)
+        T = np.eye(6)
+        T[0, 2] = -ei # ui_ref = ui_G - ei * θi
+        T[3, 5] = -ej # uj_ref = uj_G - ej * θj
+
+        return T
     
     
     def compute_verax_B(self, xi):
@@ -183,6 +197,9 @@ class LTBeamTap(Beam):
             K0_vrx += (B_vrx.T @ D_vrx @ B_vrx) * w * L
             K0_ltr += (B_ltr.T @ D_ltr @ B_ltr) * w * L
         
+        # la matriz de rigidez axial-vertical se traslada al centroide
+        K0_vrx = self.T_vrx.T @ K0_vrx @ self.T_vrx
+
         return K0_vrx, K0_ltr
 
 
@@ -193,10 +210,10 @@ class LTBeamTap(Beam):
         Kg_ltr = np.zeros((8, 8))
         L = self.length
         
-        N1 = -self.forcesG[0] # Axial izquierda
-        M1 = -self.forcesG[2] # Momento izquierd
-        N2 =  self.forcesG[3] # Axial derecha
-        M2 =  self.forcesG[5]  # Momento derecha
+        N1 = -self.forces[0] # Axial izquierda
+        M1 = -self.forces[2] # Momento izquierd
+        N2 =  self.forces[3] # Axial derecha
+        M2 =  self.forces[5]  # Momento derecha
         V_z = (M1 - M2) / L  # Cortante
 
         qzi = self.load_ints[1]
@@ -272,8 +289,8 @@ class LTBeamTap(Beam):
         self.loads[5] = -(2*qzi + 3*qzj) * L**2 / 60
 
         # Corrección por excentricidad de carga axial distribuida
-        qxezi = self.section_i.z_from_ref(self.align, int(qxpos)) + qxrz
-        qxezj = self.section_j.z_from_ref(self.align, int(qxpos)) + qxrz
+        qxezi = self.section_i.z_from_ref(self.align, qxpos) + qxrz
+        qxezj = self.section_j.z_from_ref(self.align, qxpos) + qxrz
         # excentricidad positiva (+z) y carga axial positiva (traccion) generan momentos negativos
         mi = - qxi * qxezi
         mj = - qxj * qxezj
@@ -281,24 +298,19 @@ class LTBeamTap(Beam):
         self.loads[1] += -0.5  * (mi + mj)        
         self.loads[2] +=  L/12 * (mi - mj)        
         self.loads[4] +=  0.5  * (mi + mj)        
-        self.loads[5] +=  L/12 * (mj - mi)        
+        self.loads[5] +=  L/12 * (mj - mi)
+
+        # trasladar cargas al eje centroidal
+        self.loads = self.T_vrx.T @ self.loads         
 
 
     def calculate_forces(self, glob_disps):
-        """ Calcula fuerzas internas en el eje de referencia y respecto al centroide """
-        self.disps = glob_disps # ya son locales
+        """ Calcula fuerzas internas del problema estatico a nivel centroide """
+        self.disps = glob_disps # ya son centroidales
         self.forces = self.K0_vrx @ glob_disps - self.loads
-
-        # Momentos corregidos respecto al centroide G
-        ei = self.section_i.z_from_ref(self.align, 0)
-        ej = self.section_j.z_from_ref(self.align, 0)
-        self.forcesG = self.forces.copy()
-        self.forcesG[2] += self.forces[0] * ei
-        self.forcesG[5] += self.forces[3] * ej
- 
         self.disps[ np.abs(self.disps)  < 1e-12] = 0
         self.forces[np.abs(self.forces) < 1e-9 ] = 0
-        self.forcesG[np.abs(self.forcesG) < 1e-9 ] = 0
+
 
 
     def get_fields(self):

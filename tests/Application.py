@@ -71,7 +71,7 @@ lator_restraints = np.array([
 ])
 
 # resortes lateral ubicado sobre la mesa superior
-kv = material1.E * sectionB.Iy * 1e3
+kv = material1.E * sectionB.Iy * 1e6
 springs_data = np.array([
     [nelems//3, 3,  kv, 0.0, 0.0, 0.0]
 ])
@@ -96,16 +96,12 @@ model = StabilityModel()
 model.add_materials(materials)
 model.add_sections(node_sections)
 model.add_nodes(coordinates)
-model.add_tapered_elements(elements_data, align=0)
+model.add_tapered_elements(elements_data, align=3)
 model.add_verax_restraints(verax_restraints)
 model.add_lator_restraints(lator_restraints)
 model.add_lateral_springs(springs_data)
 model.add_nodal_loads(nodal_loads)
-model.add_elem_loads(elem_loads)
-
-
-print(model.elements[0].daT, model.elements[0].daB)
-print(model.elements[1].daT, model.elements[1].daB)
+#model.add_elem_loads(elem_loads)
 
 # ----- RESOLUCION DEL MODELO --------
 # Resolucion del problema estatico

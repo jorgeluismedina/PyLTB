@@ -86,7 +86,7 @@ cases_mono = [
 # ----------------------------------------------------------------------
 # Referencias de LTBeamN (completar manualmente)
 mu_cr_ltbeamn_bi = [
-    61.75, 38.42, 38.41, 61.75, 188.57, 184.21, 166.98, 175.17, 33.97, 38.14
+    61.75, 38.42, 38.41, 61.75, 188.57, 184.21, 166.98, 175.17, 33.97, 35.14
 ]
 
 moments_ltbeamn_bi = [
@@ -102,7 +102,7 @@ def run_cases(section_type, node_sections, cases, mu_cr_ref):
     print(f"\n{'─'*130}")
     print(f" {section_type} – SIMPLY SUPPORTED BEAM (load at midspan) ".center(130))
     print(f"{'─'*130}")
-    print(f"{'#':<3} {'Align':<6} {'Carga':<57} {'mu_cr (PyLTB)':>15} {'mu_cr (LTBeamN)':>15} {'Diff (%)':>10} {'M_mid (kNm)':>13}")
+    print(f"{'#':<3} {'Align':<6} {'Carga':<57} {'μ_cr (PyLTB)':>15} {'μ_cr (LTBeamN)':>15} {'Diff (%)':>10} {'M_mid (kNm)':>13}")
     print(f"{'─'*130}")
 
     results = []
@@ -120,12 +120,12 @@ def run_cases(section_type, node_sections, cases, mu_cr_ref):
 
         static = StaticSolver(model)
         static.solve()
-        if i == 6:
-            elem_left = model.elements[mid_node - 1]
-            elem_right = model.elements[mid_node]
-            print("\n--- Case 6: Reference axis forces (before centroid conversion) ---")
-            print(f"Left element (node {mid_node-1}->{mid_node}): forces = {elem_left.forces}")
-            print(f"Right element (node {mid_node}->{mid_node+1}): forces = {elem_right.forces}")
+        #if i == 6:
+        #    elem_left = model.elements[mid_node - 1]
+        #    elem_right = model.elements[mid_node]
+        #    print("\n--- Case 6: Reference axis forces (before centroid conversion) ---")
+        #    print(f"Left element (node {mid_node-1}->{mid_node}): forces = {elem_left.forces}")
+        #    print(f"Right element (node {mid_node}->{mid_node+1}): forces = {elem_right.forces}")
 
         elem_mid = model.elements[mid_node - 1] if mid_node > 0 else model.elements[0]
         M_mid = elem_mid.forcesG[5] / 1e3

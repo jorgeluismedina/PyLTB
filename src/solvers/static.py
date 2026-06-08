@@ -42,13 +42,14 @@ class StaticSolver():
                 rez    = self.model.nloads_rez[i, 0]
                 align  = self.model.node_align[node]
                 sec    = self.model.sections[node]
-                fxez   = sec.z_from_ref(align, pos) + rez
+                fxez   = sec.z_from_ref(0, pos) + rez
                   
                 F[dof_Mx] -= Fx * fxez #el trabajo de la fuerza axial tiene que ser negativo
 
         if self.model.loaded_elems:
             for id_elem in self.model.loaded_elems:
-                F[self.model.elements[id_elem].vrx_dofs] += self.model.elements[id_elem].loads
+                elem = self.model.elements[id_elem]
+                F[elem.vrx_dofs] += elem.loads
 
         return F
 
