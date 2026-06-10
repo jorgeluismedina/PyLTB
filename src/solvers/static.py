@@ -90,6 +90,9 @@ class StaticSolver():
         
         self.compute_internal_forces(self.disps)
         self.fields = [elem.get_fields() for elem in self.model.elements]
+
+        self.prepare_diagrams()
+
         
     
     def compute_internal_forces(self, glob_disps):
@@ -125,16 +128,22 @@ class StaticSolver():
         max_M   = np.max(np.abs(all_M)) or 1
         max_def = max(np.max(np.abs(all_u)), np.max(np.abs(all_w))) or 1
 
-        N_globals, V_globals, M_globals, def_shapes = [], [], [], []
+        N_globals, V_globals, M_globals = [], [], []
+        u_globals, w_globals = [], []
+        #def_shapes = []
 
         for elem, (x, N, V, M, u, w) in zip(self.model.elements, self.fields):
             X = elem.coords[0] + x
             N_globals.append(np.vstack([X, N/max_N*esc1, N]))
             V_globals.append(np.vstack([X, V/max_V*esc1, V]))
             M_globals.append(np.vstack([X, M/max_M*esc2, M]))
-            def_shapes.append(np.vstack([X + u/max_def*esc3, w/max_def*esc3, u, w]))
+            u_globals.append(np.vstack([X, u/max_def*esc3, u]))
+            w_globals.append(np.vstack([X, w/max_def*esc3, w]))
+            #def_shapes.append(np.vstack([X + u/max_def*esc3, w/max_def*esc3, u, w]))
 
-        return N_globals, V_globals, M_globals, def_shapes
+        self.diagrams     = [N_globals, V_globals, M_globals]
+        self.deformations = [u_globals, w_globals]
+        #return N_globals, V_globals, M_globals, def_shapes
 
 
 

@@ -114,8 +114,8 @@ def run_cases(section_type, node_sections, cases, mu_cr_ref):
         static = StaticSolver(model)
         static.solve()
 
-        M_i = -model.elements[0].forcesG[2] / 1e3
-        M_j =  model.elements[-1].forcesG[5] / 1e3
+        M_i = -model.elements[0].forces[2] / 1e3
+        M_j =  model.elements[-1].forces[5] / 1e3
 
         stabi = StabilitySolver(model)
         stabi.solve()

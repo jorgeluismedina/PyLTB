@@ -23,14 +23,14 @@ class LTBeamTap(Beam):
 
         # Inicializar matrices de rigidez y geometricas
         self.T_vrx  = self.compute_verax_T()
+        self.T_ltr  = self.compute_lator_T()
         self.K0_vrx, self.K0_ltr = self.compute_K0_matrices()
         self.Kg_ltr = np.zeros((8, 8))      
 
         # Solo problema estatico
-        self.loads   = np.zeros(6)
-        self.forces  = np.zeros(6)
-        #self.forcesG = np.zeros(6)
-        self.disps   = np.zeros(6)
+        self.loads   = np.zeros(6) # centoridales
+        self.forces  = np.zeros(6) # centroidales
+        self.disps   = np.zeros(6) # centroidales
         
         self.load_ints = np.zeros(4, dtype=float)
         self.load_pos  = np.zeros(2, dtype=int)
@@ -48,6 +48,8 @@ class LTBeamTap(Beam):
         aB_j = abs(self.section_j.zf2 - self.section_j.zS)
         self.daT = (aT_j - aT_i) / self.length
         self.daB = (aB_j - aB_i) / self.length
+
+        self.dzS = (self.section_j.zS - self.section_i.zS) / self.length
         
     
 
@@ -95,14 +97,36 @@ class LTBeamTap(Beam):
     
 
     def compute_verax_T(self):
-        """ Matriz transformacion de DOFs centroidales a DOFs del eje de ref.(6x6)"""
-        # u_ref = T @ u_centroid
-        # e positiva si el eje de referencia está por encima del centroide
+        """ 
+        Matriz transformacion (6x6) de DOFs centroidales a DOFs del eje de ref.
+        e positiva si el eje de referencia está por encima del centroide
+        """
         ei = -self.section_i.z_from_ref(self.align, 0)
         ej = -self.section_j.z_from_ref(self.align, 0)
         T = np.eye(6)
         T[0, 2] = -ei # ui_ref = ui_G - ei * θi
         T[3, 5] = -ej # uj_ref = uj_G - ej * θj
+
+        return T
+    
+    def compute_lator_T(self):
+        """
+        Matriz de transformación (8x8) de DOF centroidales al centrode corte.
+        Incluye el efecto de la pendiente dzS.
+        zS positivo si el SC esta por encima del centroide
+        """
+        zS_i = self.section_i.zS
+        zS_j = self.section_j.zS
+        dzS  = self.dzS
+        T = np.eye(8)
+        # Nodo i (índices 0=v, 1=v', 2=θ, 3=θ')
+        T[0, 2] = -zS_i          # v_S = v_G - zS_i * θ
+        T[1, 2] = -dzS           # ∂v'_S/∂θ  (por la derivada de zS)
+        T[1, 3] = -zS_i          # ∂v'_S/∂θ'
+        # Nodo j (índices 4=v, 5=v', 6=θ, 7=θ')
+        T[4, 6] = -zS_j
+        T[5, 6] = -dzS
+        T[5, 7] = -zS_j
 
         return T
     
@@ -197,8 +221,9 @@ class LTBeamTap(Beam):
             K0_vrx += (B_vrx.T @ D_vrx @ B_vrx) * w * L
             K0_ltr += (B_ltr.T @ D_ltr @ B_ltr) * w * L
         
-        # la matriz de rigidez axial-vertical se traslada al centroide
-        K0_vrx = self.T_vrx.T @ K0_vrx @ self.T_vrx
+        # Trasalacion de las matrices de rigidez al centroide
+        K0_vrx = self.T_vrx.T @ K0_vrx @ self.T_vrx 
+        K0_ltr = self.T_ltr.T @ K0_ltr @ self.T_ltr
 
         return K0_vrx, K0_ltr
 
@@ -262,7 +287,8 @@ class LTBeamTap(Beam):
             
             Kg_ltr += (term_N + term_M + term_V + term_Q) * w * L
             
-        self.Kg_ltr = Kg_ltr
+        # Traslacion de la matriz geometrica lateral-torsional al centroide
+        self.Kg_ltr = self.T_ltr.T @ Kg_ltr @ self.T_ltr
 
     
 
@@ -306,9 +332,9 @@ class LTBeamTap(Beam):
 
     def calculate_forces(self, glob_disps):
         """ Calcula fuerzas internas del problema estatico a nivel centroide """
-        self.disps = glob_disps # ya son centroidales
+        self.disps  = glob_disps # ya son centroidales
         self.forces = self.K0_vrx @ glob_disps - self.loads
-        self.disps[ np.abs(self.disps)  < 1e-12] = 0
+        self.disps[np.abs(self.disps)  < 1e-12 ] = 0
         self.forces[np.abs(self.forces) < 1e-9 ] = 0
 
 

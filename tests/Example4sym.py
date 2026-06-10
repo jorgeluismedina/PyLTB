@@ -13,10 +13,8 @@ from src.sections.section_utils import interpolate_multiple_sections
 from src.solvers.static import StaticSolver
 from src.solvers.stability import StabilitySolver
 from src.plotting import (
-    plot_diagram,
-    plot_deformed,
-    plot_buckling_modes,
-    plot_buckling_mode_3d,
+    plot_diagrams,
+    plot_buckling_mode,
 )
 
 # Materiales
@@ -43,7 +41,6 @@ norm_coords = coordinates / L
 
 # Generacion de secciones
 node_sections = interpolate_multiple_sections(section_min, section_max, norm_coords)
-#node_sections = interpolate_multiple_sections(section_max, section_min, norm_coords)
 
 
 # Informacion de elementos
@@ -80,8 +77,8 @@ rez_exacto = np.abs(z_SC_apoyo - z_SC_centr)
 print(rez_exacto)
 
 nodal_loads = np.array([
-    [nelems, 0, 3,    0.0, 0.0,    0.0, -500.0, 0.0] # solo sobre la mesa superior
-    #[nelems, 0, 3,    0.0, rez_exacto,    0.0, -500.0, 0.0] # con excentricidad adicional
+    #[nelems, 0, 3,    0.0, 0.0,    0.0, -500.0, 0.0] # solo sobre la mesa superior
+    [nelems, 0, 1,    0.0, -rez_exacto,    0.0, -500.0, 0.0] # con excentricidad adicional
 ])
 
 
@@ -141,17 +138,7 @@ print("\n" + "="*55 + "\n")
 
 #"""
 # ----- PLOTEO DE RESULTADOS --------
-# Problema estatico
-N_diag, V_diag, M_diag, def_shapes = static.prepare_diagrams()
- 
-plot_diagram(model, N_diag,    title="Axial force")
-plot_diagram(model, V_diag,    title="Shear force")
-plot_diagram(model, M_diag,    title="Bending moment")
-plot_deformed(model, def_shapes, title="Deformed shape")
-
-# Problema de estabilidad
-plot_buckling_modes(model, stabi.mu_crs, stabi.modes, nmodes=2)
-plot_buckling_mode_3d(model, stabi.mu_crs, stabi.modes, imode=0, scale=0.12, n_sec=2)
-
+plot_diagrams(model, static.diagrams, static.deformations)
+plot_buckling_mode(model, stabi.mu_crs, stabi.modes_SC, imode=0, scale=0.15, n_sec=2)
 plt.show()
 #"""

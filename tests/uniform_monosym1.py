@@ -15,10 +15,8 @@ from src.sections.section_ms import ISection_MS
 from src.solvers.static import StaticSolver
 from src.solvers.stability import StabilitySolver
 from src.plotting import (
-    plot_diagram,
-    plot_deformed,
-    plot_buckling_modes,
-    plot_buckling_mode_3d,
+    plot_diagrams,
+    plot_buckling_mode,
 )
 
 # Materiales
@@ -123,17 +121,7 @@ print("\n" + "="*55 + "\n")
 
 #"""
 # ----- PLOTEO DE RESULTADOS --------
-# Problema estatico
-N_diag, V_diag, M_diag, def_shapes = static.prepare_diagrams()
- 
-plot_diagram(model, N_diag,    title="Axial force")
-plot_diagram(model, V_diag,    title="Shear force")
-plot_diagram(model, M_diag,    title="Bending moment")
-plot_deformed(model, def_shapes, title="Deformed shape")
-
-# Problema de estabilid
-plot_buckling_modes(model, stabi.mu_crs, stabi.modes, nmodes=2)
-plot_buckling_mode_3d(model, stabi.mu_crs, stabi.modes, imode=0, scale=0.13, n_sec=3)
-
+plot_diagrams(model, static.diagrams, static.deformations)
+plot_buckling_mode(model, stabi.mu_crs, stabi.modes_SC, imode=0, scale=0.15, n_sec=2)
 plt.show()
 #"""

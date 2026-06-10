@@ -94,7 +94,11 @@ moments_ltbeamn_bi = [
 ]
 
 mu_cr_ltbeamn_mono = [
-    None, None, None, None, None, None, None, None
+    127.59, 77.43, 77.39, 235.83, 229.96, 197.63, 68.89, 71.59
+]
+
+moments_ltbeamn_mono = [
+    5.625, 5.625, 5.625, 0.0, 1.057, -1.424, 6.682, 6.314
 ]
 
 # ----------------------------------------------------------------------
@@ -120,15 +124,8 @@ def run_cases(section_type, node_sections, cases, mu_cr_ref):
 
         static = StaticSolver(model)
         static.solve()
-        #if i == 6:
-        #    elem_left = model.elements[mid_node - 1]
-        #    elem_right = model.elements[mid_node]
-        #    print("\n--- Case 6: Reference axis forces (before centroid conversion) ---")
-        #    print(f"Left element (node {mid_node-1}->{mid_node}): forces = {elem_left.forces}")
-        #    print(f"Right element (node {mid_node}->{mid_node+1}): forces = {elem_right.forces}")
-
         elem_mid = model.elements[mid_node - 1] if mid_node > 0 else model.elements[0]
-        M_mid = elem_mid.forcesG[5] / 1e3
+        M_mid = elem_mid.forces[5] / 1e3
 
         stabi = StabilitySolver(model)
         stabi.solve()

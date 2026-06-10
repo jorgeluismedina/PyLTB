@@ -16,10 +16,8 @@ from src.sections.section_utils import interpolate_multiple_sections
 from src.solvers.static import StaticSolver
 from src.solvers.stability import StabilitySolver
 from src.plotting import (
-    plot_diagram,
-    plot_deformed,
-    plot_buckling_modes,
-    plot_buckling_mode_3d,
+    plot_diagrams,
+    plot_buckling_mode
 )
 
 # Materiales
@@ -101,7 +99,7 @@ model.add_verax_restraints(verax_restraints)
 model.add_lator_restraints(lator_restraints)
 model.add_lateral_springs(springs_data)
 model.add_nodal_loads(nodal_loads)
-#model.add_elem_loads(elem_loads)
+model.add_elem_loads(elem_loads)
 
 # ----- RESOLUCION DEL MODELO --------
 # Resolucion del problema estatico
@@ -143,15 +141,8 @@ print("\n" + "="*55 + "\n")
 # ----- PLOTEO DE RESULTADOS --------
 # Problema estatico
 N_diag, V_diag, M_diag, def_shapes = static.prepare_diagrams()
- 
-plot_diagram(model, N_diag,    title="Axial force")
-plot_diagram(model, V_diag,    title="Shear force")
-plot_diagram(model, M_diag,    title="Bending moment")
-plot_deformed(model, def_shapes, title="Deformed shape")
 
-# Problema de estabilid
-plot_buckling_modes(model, stabi.mu_crs, stabi.modes, nmodes=2)
-plot_buckling_mode_3d(model, stabi.mu_crs, stabi.modes, imode=0, scale=0.1, n_sec=2)
-
+plot_diagrams(model, N_diag, V_diag, M_diag, def_shapes)
+plot_buckling_mode(model, stabi.mu_crs, stabi.modes, imode=0, scale=0.13, n_sec=2)
 plt.show()
 #"""

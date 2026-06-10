@@ -106,3 +106,28 @@ class StabilitySolver():
         # Reconstruccion de modos completos con apoyos incluidos
         self.modes = np.zeros((self.model.nltr_dofs, self.mu_crs.size))
         self.modes[free, :] = modes
+
+        self.transform_modes_to_SC()
+
+    def transform_modes_to_SC(self):
+        """
+        Convierte self.modes (DOFs centroidales) a self.modes_SC (DOFs en el centro de cortante).
+        Usa operaciones vectorizadas sobre todos los nodos y modos simultáneamente.
+        """
+        n_nodes = self.model.nnodes
+
+        # Arrays con los índices de cada DOF por nodo
+        dof_v  = self.model.altr_dofs[:, 0]   # shape (n_nodes,)
+        dof_dv = self.model.altr_dofs[:, 1]
+        dof_t  = self.model.altr_dofs[:, 2]
+        dof_dt = self.model.altr_dofs[:, 3]
+
+        # Vector de excentricidades zS en cada nodo
+        zS = np.array([self.model.sections[node].zS for node in range(n_nodes)])
+
+        # Copia inicial de los modos (el giro y su derivada no cambian)
+        modes_SC = self.modes.copy()
+        modes_SC[dof_v, :]  -= zS[:, None] * self.modes[dof_t, :]  # Transformación v  : v_SC = v_G - zS * θ
+        modes_SC[dof_dv, :] -= zS[:, None] * self.modes[dof_dt, :] # Transformación v' : v'_SC ≈ v'_G - zS * θ'
+        
+        self.modes_SC = modes_SC

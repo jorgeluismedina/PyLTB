@@ -15,10 +15,8 @@ from src.sections.section_utils import interpolate_multiple_sections
 from src.solvers.static import StaticSolver
 from src.solvers.stability import StabilitySolver
 from src.plotting import (
-    plot_diagram,
-    plot_deformed,
-    plot_buckling_modes,
-    plot_buckling_mode_3d,
+    plot_diagrams,
+    plot_buckling_mode,
 )
 
 # Materiales
@@ -26,16 +24,18 @@ material1 = Material(E=2.1e11, nu=0.3, dens=1.0) #[N/m2]
 materials = [material1]
 
 # Secciones
-section1 = ISection_MS(h=0.1, bf1=0.20, bf2=0.08, tw=0.01, tf1=0.01, tf2=0.01, r1=0.00, r2=0.00) #[m]
-section2 = ISection_MS(h=0.3, bf1=0.20, bf2=0.08, tw=0.01, tf1=0.01, tf2=0.01, r1=0.00, r2=0.00) #[m]
+#section1 = ISection_MS(h=0.1, bf1=0.20, bf2=0.08, tw=0.01, tf1=0.01, tf2=0.01, r1=0.00, r2=0.00) #[m]
+#section2 = ISection_MS(h=0.3, bf1=0.20, bf2=0.08, tw=0.01, tf1=0.01, tf2=0.01, r1=0.00, r2=0.00) #[m]
 
-
+# Secciones monosimetricas
+section1 = ISection_MS(h=0.61, bf1=0.24, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00)
+section2 = ISection_MS(h=0.305, bf1=0.24, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00)
 
 
 
 # ----- CONSTRUCCION DE LA MALLA --------
-L = 4 #[m]
-nelems = 20 
+L = 4.5 #[m]
+nelems = 36 
 
 # Coordenadas de nodos
 coordinates = np.linspace(0, L, nelems+1)
@@ -48,44 +48,27 @@ node_sections = interpolate_multiple_sections(section1, section2, norm_coords)
 
 
 # Informacion de elementos
-elements_data = []
-for e in range(nelems):
-    # formato: [etype, mat_id, nodei, nodej]
-    elements_data.append([1, 0, e, e+1])
-
-elements_data = np.array(elements_data)
+elements_data = np.array([[1, 0, e, e+1] for e in range(nelems)])
 
 
 # ----- RESTRICCIONES --------
 verax_restraints = np.array([
     # simplemente apoyada: resultados iguales a LTBeamN
-    #[0,       1, 1, 0],
-    #[nelems,  0, 1, 0]
-    # config1: resultados iguales a LTBeamN
-    #[0,       0, 1, 1],
-    #[nelems,  1, 1, 0]
-    # config2: resultados iguales a LTBeamN
-    #[0,       0, 1, 1],
-    #[nelems,  1, 0, 0]
-    # config2: resultados diferentes a LTBeamN
-    [0,       0, 1, 0],
-    [nelems,  1, 0, 1]
+    [0,       1, 1, 0],
+    [nelems,  0, 1, 0]
 
 ])
 
 lator_restraints = np.array([
-    #[0,       1, 0, 1, 0],
-    #[nelems,  1, 0, 1, 0]
     [0,       1, 0, 1, 0],
-    [nelems,  0, 1, 0, 1]
+    [nelems,  1, 0, 1, 0]
 ])
 
 
 # ----- CARGAS NODALES --------
-# Carga de flexion pura unitaria
 nodal_loads = np.array([
-    [nelems//2,      0, 3,   0.0, 0.0,   0.0, -500.0, 0.0]
-    #[nelems,      0, 3,   0.0, 0.0,   0.0, -500.0, 0.0]
+    [nelems//2, 0, 0,   0.0, 0.0,     0.0, -5e3, 0.0]
+    #[nelems//2, 3, 3,   0.0, 0.0,   -10e3, -5e3, 0.0]
 ])
 
 
@@ -112,7 +95,7 @@ stabi.solve()
 mu_cr = stabi.mu_crs[0]
 
 # Resultados y comparacion
-mu_cr_ltbeamn = 183.0
+mu_cr_ltbeamn = 127.59
 
 print("\n" + "="*55)
 print(" ANALYSIS RESULTS ".center(55))
@@ -135,20 +118,9 @@ print(f"  Result diff. with LTBeamN:              {abs(mu_cr - mu_cr_ltbeamn)/mu
 print("\n" + "="*55 + "\n")
 
 
-
 #"""
 # ----- PLOTEO DE RESULTADOS --------
-# Problema estatico
-N_diag, V_diag, M_diag, def_shapes = static.prepare_diagrams()
- 
-plot_diagram(model, N_diag,    title="Axial force")
-plot_diagram(model, V_diag,    title="Shear force")
-plot_diagram(model, M_diag,    title="Bending moment")
-plot_deformed(model, def_shapes, title="Deformed shape")
-
-# Problema de estabilidad
-plot_buckling_modes(model, stabi.mu_crs, stabi.modes, nmodes=1)
-plot_buckling_mode_3d(model, stabi.mu_crs, stabi.modes, imode=0, scale=0.14, n_sec=3)
-
+plot_diagrams(model, static.diagrams, static.deformations)
+plot_buckling_mode(model, stabi.mu_crs, stabi.modes_SC, imode=0, scale=0.15, n_sec=2)
 plt.show()
 #"""
