@@ -29,7 +29,7 @@ section2 = ISection_MS(h=0.6127*0.2, bf1=0.15, bf2=0.08, tw=0.0095, tf1=0.0127, 
 
 # ----- CONSTRUCCION DE LA MALLA --------
 L = 4 #[m]
-nelems = 20
+nelems = 24
 
 # Coordenadas de nodos
 coordinates = np.linspace(0, L, nelems+1)
@@ -117,7 +117,6 @@ print(f"  Critical load factor μ_cr (PyLTB):      {mu_cr:>12.4f}")
 print(f"  Critical load factor μ_cr (LTBeamN):    {mu_cr_ltbeamn[idx]:>12.4f}")
 print(f"  Result diff. with LTBeamN:              {abs(mu_cr - mu_cr_ltbeamn[idx])/mu_cr_ltbeamn[idx]*100:>11.2f} %")
 print("\n" + "="*55 + "\n")
-
 
 
 #"""
