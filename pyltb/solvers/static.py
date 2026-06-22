@@ -1,6 +1,7 @@
 
 import numpy as np
 from scipy.linalg import cho_factor, cho_solve
+from pyltb.plotting import plot_diagrams
 
 
 
@@ -89,9 +90,8 @@ class StaticSolver():
         self.react = K0_sf @ disps_f - F_s
         
         self.compute_internal_forces(self.disps)
-        self.fields = [elem.get_fields() for elem in self.model.elements]
-
         self.prepare_diagrams()
+        return self
 
         
     
@@ -101,49 +101,31 @@ class StaticSolver():
             elem.calculate_forces(glob_disps[elem.vrx_dofs])
 
 
-    
+    def prepare_diagrams(self, scales=(0.6, 0.6, 0.8, 0.6)):
+        Fields = np.hstack([elem.get_fields() for elem in self.model.elements])
+        x = Fields[0]
+
+        norm = lambda vals, scale: np.vstack([x, vals/(np.max(np.abs(vals)) or 1.0) * scale, vals])
+        sN, sV, sM, sd = scales
+
+        self.diagrams     = norm(Fields[1], sN), norm(Fields[2], sV), norm(Fields[3], sM)
+        self.deformations = norm(Fields[4], sd), norm(Fields[5], sd)
+
     def max_vals(self):
-        """Valores máximos de fuerzas internas y desplazamiento vertical."""
-        N = np.concatenate([f[1] for f in self.fields])
-        V = np.concatenate([f[2] for f in self.fields])
-        M = np.concatenate([f[3] for f in self.fields])
-        w = self.disps.reshape(self.model.nnodes, self.model.nvrx_dofn)[:, 1]
-        return (N[np.argmax(np.abs(N))],
-                V[np.argmax(np.abs(V))],
-                M[np.argmax(np.abs(M))],
-                w[np.argmax(np.abs(w))])
+        return tuple(np.max(np.abs(d[2])) for d in (*self.diagrams, self.deformations[1]))
 
-    
-    
-    def prepare_diagrams(self, esc1=0.6, esc2=0.8, esc3=0.6):
-        """Diagrama listo para plotear, sin args externos."""
-        all_N = np.concatenate([f[1] for f in self.fields])
-        all_V = np.concatenate([f[2] for f in self.fields])
-        all_M = np.concatenate([f[3] for f in self.fields])
-        all_u = np.concatenate([f[4] for f in self.fields])
-        all_w = np.concatenate([f[5] for f in self.fields])
+    def summary(self):
+        maxN, maxV, maxM, maxw = self.max_vals()
+        w = 48
+        print(f"┌─ STATIC ANALYSIS {f'─'*(w-18)}┐")
+        print(f"│ {'N max: ' + f'{maxN/1e3:.4f} kN':<{w-2}}│")
+        print(f"│ {'V max: ' + f'{maxV/1e3:.4f} kN':<{w-2}}│")
+        print(f"│ {'M max: ' + f'{maxM/1e3:.4f} kNm':<{w-2}}│")
+        print(f"│ {'w max: ' + f'{maxw*1e3:.4f} mm':<{w-2}}│")
+        print(f"└{f'─'*w}┘\n") 
 
-        max_N   = np.max(np.abs(all_N)) or 1
-        max_V   = np.max(np.abs(all_V)) or 1
-        max_M   = np.max(np.abs(all_M)) or 1
-        max_def = max(np.max(np.abs(all_u)), np.max(np.abs(all_w))) or 1
-
-        N_globals, V_globals, M_globals = [], [], []
-        u_globals, w_globals = [], []
-        #def_shapes = []
-
-        for elem, (x, N, V, M, u, w) in zip(self.model.elements, self.fields):
-            X = elem.coords[0] + x
-            N_globals.append(np.vstack([X, N/max_N*esc1, N]))
-            V_globals.append(np.vstack([X, V/max_V*esc1, V]))
-            M_globals.append(np.vstack([X, M/max_M*esc2, M]))
-            u_globals.append(np.vstack([X, u/max_def*esc3, u]))
-            w_globals.append(np.vstack([X, w/max_def*esc3, w]))
-            #def_shapes.append(np.vstack([X + u/max_def*esc3, w/max_def*esc3, u, w]))
-
-        self.diagrams     = [N_globals, V_globals, M_globals]
-        self.deformations = [u_globals, w_globals]
-        #return N_globals, V_globals, M_globals, def_shapes
+    def plot(self):
+        return plot_diagrams(self.diagrams, self.deformations)
 
 
 

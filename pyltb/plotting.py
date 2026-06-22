@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 from typing import cast
  
-from src.shape_funcs import N_hermite
-from src.sections.section_utils import interpolate_section
+from pyltb.shape_funcs import N_hermite
+from pyltb.sections.section_utils import interpolate_section
  
  
 # ── Estilo global ──────────────────────────────────────────────────────────
@@ -98,63 +98,49 @@ def interp_mode(elem_ltr_dof, mode, L, xis):
  
 # ── Helpers de dibujo por eje ──────────────────────────────────────────────
 
-def _draw_diagram_ax(ax, model, diagrams, title=""):
-    all_x    = np.concatenate([d[0] for d in diagrams])
-    all_y    = np.concatenate([d[1] for d in diagrams])
-    all_vals = np.concatenate([d[2] for d in diagrams])
-    y_range  = all_y.max() - all_y.min() or 1.0
+def _draw_diagram_ax(ax, diagram, title=""):
+    x, y, vals = diagram
+    y_range = y.max() - y.min() or 1.0
+    x_range = x.max()
 
-    for e, elem in enumerate(model.elements):
-        diag_x, diag_y, _ = diagrams[e]
-        ax.plot(elem.coords, np.zeros(2), color=_BEAM_COLOR, lw=1, alpha=0.8)
-        ax.plot(diag_x, diag_y, color=_DIAGRAM_COLOR, lw=1)
-        ax.plot([diag_x[0],  elem.coords[0]], [diag_y[0],  0], '--',
-                color=_DIAGRAM_COLOR, lw=0.5, alpha=0.5)
-        ax.plot([diag_x[-1], elem.coords[1]], [diag_y[-1], 0], '--',
-                color=_DIAGRAM_COLOR, lw=0.5, alpha=0.5)
+    ax.plot([0, x_range], [0, 0], color=_BEAM_COLOR, lw=1, alpha=0.8)
+    ax.plot(x, y, color=_DIAGRAM_COLOR, lw=1)
 
-    for idx in critical_indices(all_y):
-        offset = label_offset(y_range, all_y[idx])
-        ax.text(all_x[idx], all_y[idx] + offset, f'{all_vals[idx]:.3e}',
-                color=_CRIT_COLOR, fontsize=8, ha='center', va='center')
+    for xs, ys in zip(x, y):
+        ax.plot([xs,  xs],  [ys,  0], '--', color=_DIAGRAM_COLOR, lw=0.5, alpha=0.5)
 
-    ax.set_title(title, fontsize=11)
-    ax.axis('equal')
-    ax.grid(True, alpha=0.3, lw=0.5)
+    for idx in critical_indices(y):
+        ax.text(x[idx], y[idx] + label_offset(y_range, y[idx]),
+                f'{vals[idx]:.3e}', color=_CRIT_COLOR, fontsize=8, ha='center', va='center')
+
+    ax.set_title(title, fontsize=11); ax.axis('equal'); ax.grid(True, alpha=0.3, lw=0.5)
 
 
-def _draw_deformed_ax(ax, model, defor, title="Deformed shape"):
-    all_x     = np.concatenate([d[0] for d in defor])
-    all_z     = np.concatenate([d[1] for d in defor])
-    all_zvals = np.concatenate([d[2] for d in defor])
-    y_range   = all_z.max() - all_z.min() or 1.0
+def _draw_deformed_ax(ax, defor, title="Deformed shape"):
+    x, y, vals = defor
+    y_range = y.max() - y.min() or 1.0
+    x_range = x.max()
 
-    for e, elem in enumerate(model.elements):
-        X, Z_def, _ = defor[e]
-        ax.plot(elem.coords, np.zeros(2), color=_BEAM_COLOR, lw=1, alpha=0.8)
-        ax.plot(X, Z_def, color=_DEFORMED_COLOR,  lw=1)
-
-    for idx in critical_indices(all_z):
-        offset = label_offset(y_range, all_z[idx])
-        ax.text(all_x[idx], all_z[idx] + offset, f'{all_zvals[idx]:.3e}',
-                color=_CRIT_COLOR, fontsize=8, ha='center', va='center')
-
-    ax.set_title(title, fontsize=11)
-    ax.axis('equal')
-    ax.grid(True, alpha=0.3, lw=0.5)
+    ax.plot([0, x_range], [0, 0], color=_BEAM_COLOR, lw=1, alpha=0.8)
+    ax.plot(x, y, color=_DEFORMED_COLOR, lw=1)
+    
+    for idx in critical_indices(y):
+        ax.text(x[idx], y[idx] + label_offset(y_range, y[idx]),
+                f'{vals[idx]:.3e}', color=_CRIT_COLOR, fontsize=8, ha='center', va='center')
+    ax.set_title(title, fontsize=11); ax.axis('equal'); ax.grid(True, alpha=0.3, lw=0.5)
 
 
 # ── API pública ────────────────────────────────────────────────────────────
 
-def plot_diagrams(model, diagrams, deformed):
+def plot_diagrams(diagrams, deformed):
     """Resumen estático en una figura 2×2: N, V, M y deformada."""
     N_diags, V_diags, M_diags = diagrams
     u_defor, w_defor = deformed
     fig, axes = plt.subplots(2, 2, figsize=(_FIG_W, _FIG_H * 1.8))
-    _draw_diagram_ax(axes[0, 0], model, N_diags,    title="Normal (N)")
-    _draw_diagram_ax(axes[0, 1], model, V_diags,    title="Shear (V)")
-    _draw_diagram_ax(axes[1, 0], model, M_diags,    title="Moment (M)")
-    _draw_deformed_ax(axes[1, 1], model, w_defor,   title="Deflection (w)")
+    _draw_diagram_ax(axes[0, 0], N_diags,    title="Normal (N)")
+    _draw_diagram_ax(axes[0, 1], V_diags,    title="Shear (V)")
+    _draw_diagram_ax(axes[1, 0], M_diags,    title="Moment (M)")
+    _draw_deformed_ax(axes[1, 1],w_defor,   title="Deflection (w)")
     fig.tight_layout()
     return fig, axes
 

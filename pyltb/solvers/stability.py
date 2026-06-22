@@ -108,6 +108,7 @@ class StabilitySolver():
         self.modes[free, :] = modes
 
         self.transform_modes_to_SC()
+        return self
 
     def transform_modes_to_SC(self):
         """
@@ -131,3 +132,21 @@ class StabilitySolver():
         modes_SC[dof_dv, :] -= zS[:, None] * self.modes[dof_dt, :] # Transformación v' : v'_SC ≈ v'_G - zS * θ'
         
         self.modes_SC = modes_SC
+
+    def summary(self, n=1, ref=None):
+        w = 48
+        print(f"┌─ STABILITY ANALYSIS {f'─'*(w-21)}┐")
+        for i, mu in enumerate(self.mu_crs[:n]):
+            print(f"│ {'Mode ' + str(i+1) + ': μ_cr = ' + f'{mu:.4f}':<{w-2}}│")
+            if ref and i == 0:
+                max_name_len = max(len(name) for name in ref.keys())
+                for name, val in ref.items():
+                    delta = abs(mu - val) / val * 100
+                    formatted_name = f"{name:<{max_name_len}}"
+                    content = f"{formatted_name}  {val:.4f}  (Δ = {delta:.2f}%)"
+                    print(f"│       {content:<{w-8}}│")
+        print(f"└{f'─'*w}┘\n")
+
+    def plot(self, imode=0, scale=1.0, n_sec=2):
+        from pyltb.plotting import plot_buckling_mode
+        return plot_buckling_mode(self.model, self.mu_crs, self.modes_SC, imode, scale, n_sec)

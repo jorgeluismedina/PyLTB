@@ -1,5 +1,5 @@
-from .elements.ltbeam import LTBeam
-from .elements.ltbeamtap import LTBeamTap
+from pyltb.elements.beamp import BeamP
+from .elements.beamnp import BeamNP
 
 
 class ElementFactory:
@@ -48,8 +48,8 @@ class ElementFactory:
 
 
 # Registrar elemento disponible
-ElementFactory.register(0, LTBeam)
-ElementFactory.register(1, LTBeamTap)
+ElementFactory.register(0, BeamP)
+ElementFactory.register(1, BeamNP)
 
 
 

@@ -1,11 +1,11 @@
 
 import numpy as np
 import scipy as sp
-from src.elements.base_beam import Beam
-from src.shape_funcs import N_hermite, dN_hermite
+from pyltb.elements.base_beam import Beam
+from pyltb.shape_funcs import N_hermite, dN_hermite
 
 
-class LTBeam(Beam):
+class BeamP(Beam):
     def __init__(self, mater, section, coords, conec, vrx_dofs, ltr_dofs):
         super().__init__(mater, coords, conec, vrx_dofs, ltr_dofs)
 
@@ -314,10 +314,10 @@ class LTBeam(Beam):
 
         # Fuerzas internas del elemento
         Ni = -self.forces[0] 
-        Vi =  self.forces[1]
+        Vi = -self.forces[1]
         Mi = -self.forces[2]
         Nj =  self.forces[3]
-        Vj = -self.forces[4]
+        Vj =  self.forces[4]
         Mj =  self.forces[5]
 
         # Diagrama de axil (lineal)
@@ -360,6 +360,8 @@ class LTBeam(Beam):
         u[np.abs(u) < tol_u] = 0.0
         w[np.abs(w) < tol_w] = 0.0
 
-        return x, N_diag, V_diag, M_diag, u, w
+        fields = np.vstack([x + self.coords[0], N_diag, V_diag, M_diag, u, w])
+
+        return fields
 
     

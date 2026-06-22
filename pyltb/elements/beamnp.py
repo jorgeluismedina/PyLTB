@@ -1,14 +1,14 @@
 
 import numpy as np
 import scipy as sp
-from src.elements.base_beam import Beam
-from src.sections.section_utils import interpolate_section
-from src.shape_funcs import N_hermite, dN_hermite, ddN_hermite
-from src.gauss_quad import gauss_1d
+from pyltb.elements.base_beam import Beam
+from pyltb.sections.section_utils import interpolate_section
+from pyltb.shape_funcs import N_hermite, dN_hermite, ddN_hermite
+from pyltb.gauss_quad import gauss_1d
 
 
 
-class LTBeamTap(Beam):
+class BeamNP(Beam):
     def __init__(self, mater, section_i, section_j, coords, conec, 
                  vrx_dofs, ltr_dofs, align=0):
         super().__init__(mater, coords, conec, vrx_dofs, ltr_dofs)
@@ -396,4 +396,6 @@ class LTBeamTap(Beam):
         u[np.abs(u) < tol_u] = 0.0
         w[np.abs(w) < tol_w] = 0.0
 
-        return x, N_diag, V_diag, M_diag, u, w
+        fields = np.vstack([x + self.coords[0], N_diag, V_diag, M_diag, u, w])
+
+        return fields

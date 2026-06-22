@@ -5,11 +5,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
  
 import numpy as np
 import matplotlib.pyplot as plt
-from src.model import StabilityModel
-from src.material import Material
-from src.sections.section_ms import ISection_MS
-from src.solvers.static import StaticSolver
-from src.solvers.stability import StabilitySolver
+from pyltb.model import StabilityModel
+from pyltb.material import Material
+from pyltb.sections.section_ms import ISection_MS
+from pyltb.solvers.static import StaticSolver
+from pyltb.solvers.stability import StabilitySolver
  
 # ── Material & sección ────────────────────────────────────────────────────────
 material = Material(E=2.1e11, nu=0.3, dens=1.0)

@@ -10,12 +10,12 @@ import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
  
 import numpy as np
-from src.model import StabilityModel
-from src.material import Material
-from src.sections.section_ms import ISection_MS
-from src.sections.section_utils import interpolate_multiple_sections
-from src.solvers.static import StaticSolver
-from src.solvers.stability import StabilitySolver
+from pyltb.model import StabilityModel
+from pyltb.material import Material
+from pyltb.sections.section_ms import ISection_MS
+from pyltb.sections.section_utils import interpolate_multiple_sections
+from pyltb.solvers.static import StaticSolver
+from pyltb.solvers.stability import StabilitySolver
  
  
 # ── helpers ────────────────────────────────────────────────────────────────────

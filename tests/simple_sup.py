@@ -11,12 +11,12 @@ import numpy as np
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.model import StabilityModel
-from src.material import Material
-from src.sections.section_ms import ISection_MS
-from src.sections.section_utils import interpolate_multiple_sections
-from src.solvers.static import StaticSolver
-from src.solvers.stability import StabilitySolver
+from pyltb.model import StabilityModel
+from pyltb.material import Material
+from pyltb.sections.section_ms import ISection_MS
+from pyltb.sections.section_utils import interpolate_multiple_sections
+from pyltb.solvers.static import StaticSolver
+from pyltb.solvers.stability import StabilitySolver
 
 # ----------------------------------------------------------------------
 material1 = Material(E=2.10e11, nu=0.3, dens=1.0)
@@ -122,13 +122,11 @@ def run_cases(section_type, node_sections, cases, mu_cr_ref):
         model.add_lator_restraints(lator_restraints)
         model.add_nodal_loads(nodal_loads)
 
-        static = StaticSolver(model)
-        static.solve()
+        static = StaticSolver(model).solve()
         elem_mid = model.elements[mid_node - 1] if mid_node > 0 else model.elements[0]
         M_mid = elem_mid.forces[5] / 1e3
 
-        stabi = StabilitySolver(model)
-        stabi.solve()
+        stabi = StabilitySolver(model).solve()
         mu_cr = stabi.mu_crs[0]
 
         mu_lt = mu_cr_ref[i] if i < len(mu_cr_ref) and mu_cr_ref[i] is not None else None
