@@ -5,12 +5,7 @@ Compara PyLTB con LTBeamN variando alineamiento, tipo de carga y altura de aplic
 Caso base: ménsula acartelada de 4 m, secciones bisimétricas, sin carga distribuida.
 """
 
-import sys
-import os
 import numpy as np
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from pyltb.model import StabilityModel
 from pyltb.material import Material
 from pyltb.sections.section_ms import ISection_MS

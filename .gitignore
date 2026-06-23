@@ -3,6 +3,11 @@
 **/__pycache__
 *.pyc
 
+# Build / packaging
+*.egg-info/
+dist/
+build/
+
 #Jupyter Notebooks
 *.ipynb
 

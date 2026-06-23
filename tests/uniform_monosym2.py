@@ -1,12 +1,6 @@
 
-import sys
-import os
-# Añadir el directorio raíz del proyecto al sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import numpy as np
-import scipy as sp
-
 import matplotlib.pyplot as plt
 from pyltb.model import StabilityModel
 from pyltb.material import Material

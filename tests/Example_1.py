@@ -6,9 +6,6 @@ Example 1  –  Cantilever tapered beams
   1c: bisymmetric section,   Fx + Fz at top flange (combined)
 """
  
-import sys, os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
- 
 import numpy as np
 from pyltb.model import StabilityModel
 from pyltb.material import Material

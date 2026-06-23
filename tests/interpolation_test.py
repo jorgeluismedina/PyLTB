@@ -1,12 +1,4 @@
 
-import sys
-import os
-# Añadir el directorio raíz del proyecto al sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-import numpy as np
-
-import matplotlib.pyplot as plt
 from pyltb.material import Material
 from pyltb.sections.section_ms import ISection_MS
 from pyltb.sections.section_utils import interpolate_multiple_sections

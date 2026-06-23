@@ -4,8 +4,6 @@ Example 2  –  Cantilever tapered beam (L=4 m)
               Combined axial + transverse tip loads, varying N/Q ratio
 """
  
-import sys, os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
  
 import numpy as np
 from pyltb.model import StabilityModel

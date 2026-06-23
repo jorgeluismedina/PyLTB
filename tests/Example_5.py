@@ -6,8 +6,6 @@ Example 5  –  Simply supported bisymmetric double-tapered beam
   sym:   half-beam with symmetric BCs, 3 lengths
 """
  
-import sys, os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
  
 import numpy as np
 from pyltb.model import StabilityModel
