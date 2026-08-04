@@ -4,32 +4,30 @@ import matplotlib.pyplot as plt
 from pyltb.model import StabilityModel
 from pyltb.material import Material
 from pyltb.sections.section_ms import ISection_MS
-from pyltb.sections.section_utils import interpolate_multiple_sections
+from pyltb.sections.section_utils import build_mesh 
 from pyltb.solvers.static import StaticSolver
 from pyltb.solvers.stability import StabilitySolver
 
 
 # ── Materiales ────────────────────────────────────────────────────────────
-materials = [Material(E=2.1e11, nu=0.3, dens=1.0)]
+materials = [Material(E=2.1e11, nu=0.3, rho=1.0)]
 
 # ── Secciones ─────────────────────────────────────────────────────────────
 section1 = ISection_MS(h=0.61, bf1=0.18, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00) #[m]
 section2 = ISection_MS(h=0.305, bf1=0.18, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00) #[m]
+section_order = [section1, section2]
+section_breakpoints = [0.0, 1.0]
 #section2.summary()
 
 # ── Malla ─────────────────────────────────────────────────────────────────
 idx = 0 # índice de longitud a analizar
 Ls  = np.array([2, 4, 6, 8, 10])
-L   = Ls[idx]
-nelems = int(4*L)
+nelems = int(4*Ls[idx])
 
-nodes    = np.linspace(0, L, nelems + 1)
-sections = interpolate_multiple_sections(section1, section2, nodes / L)
-
-
+nodes, sections, elements_data = build_mesh(Ls[idx], section_breakpoints, section_order, 
+                                            nelems, etype=1, mat_id=0)
 
 # ── Modelo ────────────────────────────────────────────────────────────────
-elements_data = np.array([[1, 0, e, e+1] for e in range(nelems)])
 # Empotramiento
 verax_restraints = np.array([[0,  1, 1, 1]])
 lator_restraints = np.array([[0,  1, 1, 1, 1]])

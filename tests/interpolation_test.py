@@ -6,7 +6,7 @@ from pyltb.gauss_quad import gauss_1d
 
 
 # Materiales
-material1 = Material(E=2.1e11, nu=0.2, dens=1.0) #[N/m2]
+material1 = Material(E=2.1e11, nu=0.2, rho=1.0) #[N/m2]
 materials = [material1]
 
 # Secciones

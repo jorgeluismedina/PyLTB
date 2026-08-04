@@ -11,7 +11,7 @@ from pyltb.solvers.stability import StabilitySolver
 
 
 # MATERIALES
-materials = [Material(E=2.1e11, nu=0.3, dens=1.0)]
+materials = [Material(E=2.1e11, nu=0.3, rho=1.0)]
 
 # SECCIONES
 section1 = ISection_MS(h=0.61, bf1=0.10, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00) #[m]

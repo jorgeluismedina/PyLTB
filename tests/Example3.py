@@ -9,7 +9,7 @@ from pyltb.solvers.static import StaticSolver
 from pyltb.solvers.stability import StabilitySolver
 
 # MATERIALES
-materials = [Material(E=2.1e11, nu=0.3, dens=1.0)]
+materials = [Material(E=2.1e11, nu=0.3, rho=1.0)]
 
 # SECCIONES
 section_max = ISection_MS(h=0.60, bf1=0.15, bf2=0.15, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0.00, r2=0.00) #[m]

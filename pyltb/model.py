@@ -194,9 +194,9 @@ class StabilityModel():
         L = float(self.coords[-1] - self.coords[0])
         w = 48
         print(f"\n┌─ MODEL {f'─'*(w-8)}┐")
-        print(f"│ {'Length: ' + f'{L:.3f} m':<{w-2}}│")
-        print(f"│ {'Nodes: ' + str(self.nnodes):<{w-2}}│")
-        print(f"│ {'Elements: ' + str(self.nelems):<{w-2}}│")
+        print(f"│ {'Length: ' + f'{L:.3f} m':<{w-2}} │")
+        print(f"│ {'Nodes: ' + str(self.nnodes):<{w-2}} │")
+        print(f"│ {'Elements: ' + str(self.nelems):<{w-2}} │")
         print(f"└{f'─'*w}┘\n")
 
 

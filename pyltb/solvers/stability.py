@@ -137,14 +137,14 @@ class StabilitySolver():
         w = 48
         print(f"┌─ STABILITY ANALYSIS {f'─'*(w-21)}┐")
         for i, mu in enumerate(self.mu_crs[:n]):
-            print(f"│ {'Mode ' + str(i+1) + ': μ_cr = ' + f'{mu:.4f}':<{w-2}}│")
+            print(f"│ {'Mode ' + str(i+1) + ': μ_cr = ' + f'{mu:.4f}':<{w-2}} │")
             if ref and i == 0:
                 max_name_len = max(len(name) for name in ref.keys())
                 for name, val in ref.items():
                     delta = abs(mu - val) / val * 100
                     formatted_name = f"{name:<{max_name_len}}"
                     content = f"{formatted_name}  {val:.4f}  (Δ = {delta:.2f}%)"
-                    print(f"│       {content:<{w-8}}│")
+                    print(f"│       {content:<{w-8}} │")
         print(f"└{f'─'*w}┘\n")
 
     def plot(self, imode=0, scale=1.0, n_sec=2):

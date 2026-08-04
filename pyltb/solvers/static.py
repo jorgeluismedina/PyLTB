@@ -118,10 +118,10 @@ class StaticSolver():
         maxN, maxV, maxM, maxw = self.max_vals()
         w = 48
         print(f"┌─ STATIC ANALYSIS {f'─'*(w-18)}┐")
-        print(f"│ {'N max: ' + f'{maxN/1e3:.4f} kN':<{w-2}}│")
-        print(f"│ {'V max: ' + f'{maxV/1e3:.4f} kN':<{w-2}}│")
-        print(f"│ {'M max: ' + f'{maxM/1e3:.4f} kNm':<{w-2}}│")
-        print(f"│ {'w max: ' + f'{maxw*1e3:.4f} mm':<{w-2}}│")
+        print(f"│ {'N max: ' + f'{maxN/1e3:.4f} kN':<{w-2}} │")
+        print(f"│ {'V max: ' + f'{maxV/1e3:.4f} kN':<{w-2}} │")
+        print(f"│ {'M max: ' + f'{maxM/1e3:.4f} kNm':<{w-2}} │")
+        print(f"│ {'w max: ' + f'{maxw*1e3:.4f} mm':<{w-2}} │")
         print(f"└{f'─'*w}┘\n") 
 
     def plot(self):

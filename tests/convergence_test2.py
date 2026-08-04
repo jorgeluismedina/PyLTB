@@ -8,7 +8,7 @@ from pyltb.solvers.static import StaticSolver
 from pyltb.solvers.stability import StabilitySolver
  
 # ── Material & sección ────────────────────────────────────────────────────────
-material = Material(E=2.1e11, nu=0.3, dens=1.0)
+material = Material(E=2.1e11, nu=0.3, rho=1.0)
  
 section = ISection_MS(h=0.3, bf1=0.15, bf2=0.15,
                       tw=0.015, tf1=0.015, tf2=0.015,
@@ -94,6 +94,7 @@ err_tap = np.abs(mu_tap - mu_cr_ltbeamn) / mu_cr_ltbeamn * 100
 ns = np.array(mesh_sizes)
  
 # ── Plots ─────────────────────────────────────────────────────────────────────
+plt.style.use(['science','notebook','grid'])
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 #fig.suptitle(
 #    r"Convergence Study – Simply Supported Beam, Uniform Distributed V. Load"
@@ -101,32 +102,38 @@ fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 #    r"$\mu_{cr}^{\mathrm{ref}} = $" + f"{mu_cr_ltbeamn:.4f}",
 #    fontsize=12,
 #)
- 
+fs_axes = 15
+fs_ticks = 13
+fs_legend = 12
+ms_plot = 5
+
 # μ_cr vs n
 ax = axes[0]
 ax.axhline(mu_cr_ltbeamn, color="k", ls="--", lw=1.2, label=r"LTBeamN $\mu_{cr}$")
-ax.plot(ns, mu_uni, "o-", color="steelblue",  lw=1.5, ms=6, label="Uniform")
-ax.plot(ns, mu_tap, "s-", color="darkorange", lw=1.5, ms=6, label="Tapered")
-ax.set_xlabel("Number of elements  $n$", fontsize=11)
-ax.set_ylabel(r"$\mu_{cr}$", fontsize=11)
-ax.set_title(r"Critical load factor vs mesh refinement")
+ax.plot(ns, mu_uni, "o-", color="blue",  lw=1.5, ms=6, label="Uniform element type")
+ax.plot(ns, mu_tap, "s-", color="red", lw=1.5, ms=6, label="Tapered element type")
+ax.set_xlabel("Number of elements  $n$", fontsize=fs_axes)
+ax.set_ylabel(r"$\mu_{cr}$", fontsize=fs_axes)
+#ax.set_title(r"Critical load factor vs mesh refinement")
 ax.set_xscale("log")
-ax.legend(fontsize=9)
+ax.tick_params(axis='both', which='major', labelsize=fs_ticks)
+ax.legend(loc='upper right', bbox_to_anchor=(0.95, 0.95), fancybox=False, edgecolor='black', fontsize=fs_legend)
 ax.grid(True, alpha=0.3)
  
 # Error relativo vs n
 ax = axes[1]
-ax.plot(ns, err_uni, "o-", color="steelblue",  lw=1.5, ms=6, label="Uniform")
-ax.plot(ns, err_tap, "s-", color="darkorange", lw=1.5, ms=6, label="Tapered")
-ax.set_xlabel("Number of elements  $n$", fontsize=11)
-ax.set_ylabel(r"Error  [%]", fontsize=11)
-ax.set_title("Relative error vs mesh refinement")
+ax.plot(ns, err_uni, "o-", color="blue",  lw=1.5, ms=6, label="Uniform element type")
+ax.plot(ns, err_tap, "s-", color="red", lw=1.5, ms=6, label="Tapered element type")
+ax.set_xlabel("Number of elements  $n$", fontsize=fs_axes)
+ax.set_ylabel(r"Error  [%]", fontsize=fs_axes)
+#ax.set_title("Relative error vs mesh refinement")
 ax.set_xscale("log")
 ax.set_yscale("log")
-ax.legend(fontsize=9)
+ax.tick_params(axis='both', which='major', labelsize=fs_ticks)
+ax.legend(loc='upper right', bbox_to_anchor=(0.95, 0.95), fancybox=False, edgecolor='black', fontsize=fs_legend)
 ax.grid(True, alpha=0.3, which="both")
  
 plt.tight_layout()
-plt.savefig("convergence_plot2.pdf", dpi=200)
+plt.savefig(r"D:\Maestria UFRGS\Tesis maestria\Seminario\fig\convergence_plot2.pdf", dpi=300)
 plt.show()
 print("\nDone.")

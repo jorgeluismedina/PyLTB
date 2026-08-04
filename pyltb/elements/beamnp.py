@@ -12,7 +12,6 @@ class BeamNP(Beam):
     def __init__(self, mater, section_i, section_j, coords, conec, 
                  vrx_dofs, ltr_dofs, align=0):
         super().__init__(mater, coords, conec, vrx_dofs, ltr_dofs)
-
         self.section_i = section_i
         self.section_j = section_j
         self.align     = align
@@ -22,33 +21,19 @@ class BeamNP(Beam):
         self.gpoints, self.gweights = gauss_1d(4)
 
         # Inicializar matrices de rigidez y geometricas
-        self.T_vrx  = self.compute_verax_T()
-        self.T_ltr  = self.compute_lator_T()
-        self.K0_vrx, self.K0_ltr = self.compute_K0_matrices()
-        self.Kg_ltr = np.zeros((8, 8))      
-
-        # Solo problema estatico
-        self.loads   = np.zeros(6) # centoridales
-        self.forces  = np.zeros(6) # centroidales
-        self.disps   = np.zeros(6) # centroidales
-        
-        self.load_ints = np.zeros(4, dtype=float)
-        self.load_pos  = np.zeros(2, dtype=int)
-        self.load_rez  = np.zeros(2, dtype=float)
-
-        
+        self.compute_verax_T()
+        self.compute_lator_T()
+        self.compute_K0_matrices()     
+      
 
     def init_geometry(self):
-        vector = self.coords[1] - self.coords[0]
-        self.length = sp.linalg.norm(vector)
-      
+        """ Calcula las pendientes de las secciones"""
         aT_i = abs(self.section_i.zf1 - self.section_i.zS)
         aB_i = abs(self.section_i.zf2 - self.section_i.zS)
         aT_j = abs(self.section_j.zf1 - self.section_j.zS)
         aB_j = abs(self.section_j.zf2 - self.section_j.zS)
         self.daT = (aT_j - aT_i) / self.length
         self.daB = (aB_j - aB_i) / self.length
-
         self.dzS = (self.section_j.zS - self.section_i.zS) / self.length
         
     
@@ -103,11 +88,10 @@ class BeamNP(Beam):
         """
         ei = -self.section_i.z_from_ref(self.align, 0)
         ej = -self.section_j.z_from_ref(self.align, 0)
-        T = np.eye(6)
-        T[0, 2] = -ei # ui_ref = ui_G - ei * θi
-        T[3, 5] = -ej # uj_ref = uj_G - ej * θj
-
-        return T
+        self.T_vrx = np.eye(6)
+        self.T_vrx[0, 2] = -ei # ui_ref = ui_G - ei * θi
+        self.T_vrx[3, 5] = -ej # uj_ref = uj_G - ej * θj
+        #return T
     
     def compute_lator_T(self):
         """
@@ -118,17 +102,13 @@ class BeamNP(Beam):
         zS_i = self.section_i.zS
         zS_j = self.section_j.zS
         dzS  = self.dzS
-        T = np.eye(8)
-        # Nodo i (índices 0=v, 1=v', 2=θ, 3=θ')
-        T[0, 2] = -zS_i          # v_S = v_G - zS_i * θ
-        T[1, 2] = -dzS           # ∂v'_S/∂θ  (por la derivada de zS)
-        T[1, 3] = -zS_i          # ∂v'_S/∂θ'
-        # Nodo j (índices 4=v, 5=v', 6=θ, 7=θ')
-        T[4, 6] = -zS_j
-        T[5, 6] = -dzS
-        T[5, 7] = -zS_j
-
-        return T
+        self.T_ltr = np.eye(8)
+        self.T_ltr[0, 2] = -zS_i          # v_S = v_G - zS_i * θ
+        self.T_ltr[1, 2] = -dzS           # ∂v'_S/∂θ  (por la derivada de zS)
+        self.T_ltr[1, 3] = -zS_i          # ∂v'_S/∂θ'
+        self.T_ltr[4, 6] = -zS_j
+        self.T_ltr[5, 6] = -dzS
+        self.T_ltr[5, 7] = -zS_j
     
     
     def compute_verax_B(self, xi):
@@ -201,8 +181,6 @@ class BeamNP(Beam):
     def compute_K0_matrices(self):
         """ Matriz de rigidez Axial-Flexion vertical (6x6)"""
         """ Matriz de rigidez Torsion-Flexion lateral (8x8)"""
-        K0_vrx = np.zeros((6, 6))
-        K0_ltr = np.zeros((8, 8))
         L = self.length
 
         for xi, w in zip(self.gpoints, self.gweights):
@@ -218,21 +196,16 @@ class BeamNP(Beam):
             B_ltr = self.compute_lator_B(xi)
 
             # Acumular contribuciones
-            K0_vrx += (B_vrx.T @ D_vrx @ B_vrx) * w * L
-            K0_ltr += (B_ltr.T @ D_ltr @ B_ltr) * w * L
+            self.K0_vrx += (B_vrx.T @ D_vrx @ B_vrx) * w * L
+            self.K0_ltr += (B_ltr.T @ D_ltr @ B_ltr) * w * L
         
         # Trasalacion de las matrices de rigidez al centroide
-        K0_vrx = self.T_vrx.T @ K0_vrx @ self.T_vrx 
-        K0_ltr = self.T_ltr.T @ K0_ltr @ self.T_ltr
+        self.K0_vrx = self.T_vrx.T @ self.K0_vrx @ self.T_vrx 
+        self.K0_ltr = self.T_ltr.T @ self.K0_ltr @ self.T_ltr
 
-        return K0_vrx, K0_ltr
-
-
-    
 
     def update_lator_Kg(self):
         """ Matriz geometrica Torsion-Flexion lateral (8x8)"""
-        Kg_ltr = np.zeros((8, 8))
         L = self.length
         
         N1 = -self.forces[0] # Axial izquierda
@@ -284,118 +257,23 @@ class BeamNP(Beam):
             # Aporte de las cargas distribuidas
             term_Q = qzez * qz_xi * np.outer(vec_t, vec_t)   # ec. (20) Beyer — θ²
 
-            
-            Kg_ltr += (term_N + term_M + term_V + term_Q) * w * L
+            self.Kg_ltr += (term_N + term_M + term_V + term_Q) * w * L
             
         # Traslacion de la matriz geometrica lateral-torsional al centroide
-        self.Kg_ltr = self.T_ltr.T @ Kg_ltr @ self.T_ltr
+        self.Kg_ltr = self.T_ltr.T @ self.Kg_ltr @ self.T_ltr
 
-    
 
     def add_loads(self, qxpos, qzpos, qxrz, qzrz, qxi, qzi, qxj, qzj):
         """ Añade cargas en coordenadas locales """
-        # qxi = intensidad en el nodo i en direccion de la barra
-        # qxj = intensidad en el nodo j en direccion de la barra
-        # qzi = intensidad en el nodo i en direccion perpendicular de la barra
-        # qzj = intensidad en el nodo j en direccion perpendicular de la barra
-        # qxpos = posicion (altura) de aplicacion de la carga axial
-        # qzpos = posicion (altura) de aplicacion de la carga vertical
+        self.load_ints = np.array([qxi, qzi, qxj, qzj], dtype=float) # intensidades de carga
+        self.load_pos  = np.array([qxpos, qzpos], dtype=int)         # posiciones de carga
+        self.load_rez  = np.array([qxrz, qzrz], dtype=float)         # excentricidad relativa de carga
 
-        self.load_ints = np.array([qxi, qzi, qxj, qzj], dtype=float)
-        self.load_pos  = np.array([qxpos, qzpos], dtype=int)
-        self.load_rez  = np.array([qxrz, qzrz], dtype=float)
-        
-        L = self.length
-
-        self.loads[0] =  (qxi/3 + qxj/6) * L
-        self.loads[1] =  (7*qzi + 3*qzj) * L / 20
-        self.loads[2] =  (3*qzi + 2*qzj) * L**2 / 60
-        self.loads[3] =  (qxj/3 + qxi/6) * L
-        self.loads[4] =  (3*qzi + 7*qzj) * L / 20
-        self.loads[5] = -(2*qzi + 3*qzj) * L**2 / 60
-
-        # Corrección por excentricidad de carga axial distribuida
-        qxezi = self.section_i.z_from_ref(self.align, qxpos) + qxrz
-        qxezj = self.section_j.z_from_ref(self.align, qxpos) + qxrz
         # excentricidad positiva (+z) y carga axial positiva (traccion) generan momentos negativos
+        qxezi = self.section_i.z_from_ref(self.align, int(qxpos)) + qxrz
+        qxezj = self.section_j.z_from_ref(self.align, int(qxpos)) + qxrz
         mi = - qxi * qxezi
         mj = - qxj * qxezj
- 
-        self.loads[1] += -0.5  * (mi + mj)        
-        self.loads[2] +=  L/12 * (mi - mj)        
-        self.loads[4] +=  0.5  * (mi + mj)        
-        self.loads[5] +=  L/12 * (mj - mi)
 
-        # trasladar cargas al eje centroidal
-        self.loads = self.T_vrx.T @ self.loads         
-
-
-    def calculate_forces(self, glob_disps):
-        """ Calcula fuerzas internas del problema estatico a nivel centroide """
-        self.disps  = glob_disps # ya son centroidales
-        self.forces = self.K0_vrx @ glob_disps - self.loads
-        self.disps[np.abs(self.disps)  < 1e-12 ] = 0
-        self.forces[np.abs(self.forces) < 1e-9 ] = 0
-
-
-
-    def get_fields(self):
-        L  = self.length
-        x  = np.linspace(0,L,2) # 3 puntos nomas
-        xi = x/L
-
-        # Obtener funciones de forma y sus derivadas
-        Nh  = N_hermite(xi)      # (4, n_points)
-        dNh = dN_hermite(xi)    # (4, n_points)
-
-        # Fuerzas internas del elemento
-        Ni = -self.forces[0] 
-        Vi = -self.forces[1]
-        Mi = -self.forces[2]
-        Nj =  self.forces[3]
-        Vj =  self.forces[4]
-        Mj =  self.forces[5]
-
-        # Diagrama de axil (lineal)
-        N_diag = (1 - xi) * Ni + xi * Nj
-
-        # Diagrama de momento (interpolacion cubica)
-        # M(xi) = N1*Mi + N2*(L*Vi) + N3*Mj + N4*(L*Vj)
-        M_diag = (Nh[0] * Mi +
-                  Nh[1] * L * Vi +
-                  Nh[2] * Mj +
-                  Nh[3] * L * Vj)
-        
-        # Diagrama de cortante (derivada del momento)
-        # V = dM/dx = (1/L) * dM/dxi
-        V_diag = (dNh[0] * Mi / L +
-                  dNh[1] * Vi +
-                  dNh[2] * Mj / L +
-                  dNh[3] * Vj)
-
-        # Desplazamiento Axial: Interpolacion lineal
-        u = (1 - xi) * self.disps[0] + xi * self.disps[3]
-
-        # Desplazamiento Vertical: Interpolacion cubica
-        w =  (Nh[0]*self.disps[1] + 
-              Nh[1]*L*self.disps[2] + 
-              Nh[2]*self.disps[4] + 
-              Nh[3]*L*self.disps[5])
-
-        # Tolerancias relativas por tipo de diagrama
-        eps = 1e-10
-        tol_N = eps * max(abs(Ni), abs(Nj), 1.0)
-        tol_V = eps * max(abs(Mi), abs(Mj), 1.0) / L   # V ~ M/L
-        tol_M = eps * max(abs(Mi), abs(Mj), 1.0)
-        tol_u = eps * max(abs(self.disps[0]), abs(self.disps[3]), 1e-15)
-        tol_w = eps * max(abs(self.disps[1]), abs(self.disps[4]), 1e-15)
-
-        N_diag[np.abs(N_diag) < tol_N] = 0.0
-        V_diag[np.abs(V_diag) < tol_V] = 0.0
-        M_diag[np.abs(M_diag) < tol_M] = 0.0
-        u[np.abs(u) < tol_u] = 0.0
-        w[np.abs(w) < tol_w] = 0.0
-
-        fields = np.vstack([x + self.coords[0], N_diag, V_diag, M_diag, u, w])
-
-        return fields
+        self.compute_equivalent_loads(qxi, qzi, qxj, qzj, mi, mj)
+        self.loads = self.T_vrx.T @ self.loads # trasladar cargas al eje centroidal        

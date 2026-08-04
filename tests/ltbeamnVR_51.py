@@ -9,7 +9,7 @@ from pyltb.sections.section_bs import ISection_BS
 from pyltb.solvers.static import StaticSolver
 from pyltb.solvers.stability import StabilitySolver
 # Materiales
-material1 = Material(E=2.1e11, nu=0.3, dens=0.0) #[N/m2]
+material1 = Material(E=2.1e11, nu=0.3, rho=0.0) #[N/m2]
 materials = [material1]
 
 # Secciones

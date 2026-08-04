@@ -8,7 +8,7 @@ from pyltb.sections.section_utils import interpolate_multiple_sections
 from pyltb.solvers.static import StaticSolver
 from pyltb.solvers.stability import StabilitySolver
 # ----- MATERIAL --------
-material1 = Material(E=2.10e11, nu=0.3, dens=1.0)
+material1 = Material(E=2.10e11, nu=0.3, rho=1.0)
 materials = [material1]
 
 # ----- SECCIONES --------

@@ -18,7 +18,7 @@ from pyltb.solvers.stability import StabilitySolver
  
 def solve(coords, sections, edata, nodal_loads, align=0):
     model = StabilityModel()
-    model.add_materials([Material(E=2.10e11, nu=0.3, dens=1.0)])
+    model.add_materials([Material(E=2.10e11, nu=0.3, rho=1.0)])
     model.add_sections(sections)
     model.add_nodes(coords)
     model.add_tapered_elements(edata, align=align)
