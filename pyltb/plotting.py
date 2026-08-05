@@ -251,31 +251,7 @@ def _draw_2d_mode_ax(ax, model, mode, legend_anchor=(0.5, 1.3), legend_fontsize=
 
 
 # ── API pública ────────────────────────────────────────────────────────────
-'''
-def plot_buckling_mode(model, mu_crs, modes, imode=0, scale=1.0, n_sec=2):
-    """Vista combinada del modo de pandeo: 3D (arriba) y curvas 2D (abajo)."""
-    mode_n = _normalize_mode(modes, imode, scale)
-    xis    = np.linspace(0.0, 1.0, n_sec)
 
-    fig  = plt.figure(figsize=(_FIG_W, _FIG_H * 1.8))
-    gs   = fig.add_gridspec(2, 1, height_ratios=[6, 1], hspace=0.05)
-    ax3d = fig.add_subplot(gs[0], projection='3d')
-    ax2d = fig.add_subplot(gs[1])
-
-    _setup_ax3d(ax3d)
-    _draw_3d_mode_ax(ax3d, model, mode_n, xis)
-    _fix_3d_aspect(ax3d)
-    draw_axis_arrows(ax3d, 0.0, 0.0, 0.0, 0.06)
-    ax3d.set_title(rf'Mode {imode+1}  —  $\mu_{{cr}} = {mu_crs[imode]:.3f}$',
-                   fontsize=11, pad=15)
-
-    _draw_2d_mode_ax(ax2d, model, modes[:, imode], legend_fontsize=8)
-    ax2d.tick_params(axis='y', labelsize=8)
-
-    fig.subplots_adjust(left=0.05, right=0.95, top=0.93, bottom=0.07)
-    return fig, (ax3d, ax2d)
-
-'''
 def plot_buckling_mode(model, mu_crs, modes, imode=0, scale=1.0, n_sec=2, curves=True):
     mode_n = _normalize_mode(modes, imode, scale)
     xis    = np.linspace(0.0, 1.0, n_sec)
