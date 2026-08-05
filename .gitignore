@@ -12,7 +12,7 @@ build/
 *.ipynb
 
 #Imagenes
-*.png
+#*.png
 
 # Pdfs
 *.pdf

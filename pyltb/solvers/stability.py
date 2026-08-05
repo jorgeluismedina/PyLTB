@@ -147,6 +147,6 @@ class StabilitySolver():
                     print(f"│       {content:<{w-8}} │")
         print(f"└{f'─'*w}┘\n")
 
-    def plot(self, imode=0, scale=1.0, n_sec=2):
+    def plot(self, imode=0, scale=1.0, n_sec=2, curves=True):
         from pyltb.plotting import plot_buckling_mode
-        return plot_buckling_mode(self.model, self.mu_crs, self.modes_SC, imode, scale, n_sec)
+        return plot_buckling_mode(self.model, self.mu_crs, self.modes_SC, imode, scale, n_sec, curves)
