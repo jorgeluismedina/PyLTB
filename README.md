@@ -129,7 +129,7 @@ plt.show()
 </p>
 
 ```bash
-python examples/simply_supported_uniform_moment.py
+python tests/uniform_monosym2.py
 ```
 
 ### Cantiliver tapered beam — point load at tip
@@ -139,7 +139,7 @@ python examples/simply_supported_uniform_moment.py
 </p>
 
 ```bash
-python examples/simply_supported_uniform_moment.py
+python test/example1a.py
 ```
 
 ### Simple supported double tapered beam — point load at center
@@ -149,7 +149,7 @@ python examples/simply_supported_uniform_moment.py
 </p>
 
 ```bash
-python examples/simply_supported_uniform_moment.py
+python tests/example4.py
 ```
 
 ---
@@ -170,7 +170,7 @@ python examples/simply_supported_uniform_moment.py
 ```python
 # [id_elem, qxpos, qzpos, qxez, qzez, qxi, qzi, qxj, qzj]
 model.add_elem_loads(np.array([
-    [0,  0, 3, 0, 0,  0, 10,  0, 10]   # vertical load on top flange, element 0
+    [0,  0, 3,   0, 0,    0, -10,  0, -10]   # vertical downward load on top flange, element 0
 ]))
 ```
 
@@ -179,7 +179,7 @@ model.add_elem_loads(np.array([
 ```python
 # [node, fxpos, fzpos, fxez, fzez, Fx, Fz, Mx]
 model.add_nodal_loads(np.array([
-    [5,  0, 3, 0, 0,  0, -50, 0]   # 50 N downward at top flange, node 5
+    [5,  0, 3,   0, 0,    0, -50, 0]   # 50 N downward at top flange, node 5
 ]))
 ```
 
