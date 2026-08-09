@@ -77,5 +77,5 @@ stabi.summary(ref={"Ref.": mu_cr_ref[idx],
 
 # ── Plots ─────────────────────────────────────────────────────────────────
 static.plot()
-stabi.plot(imode=0, scale=0.15, n_sec=2)
+stabi.plot(imode=0, scale=0.18, n_sec=2)
 plt.show()

@@ -69,11 +69,11 @@ z_SC_centr = section_max.z_from_ref(3, 1)  # SC local que usa LTBeamN por defect
 
 # 2. La distancia exacta a restar
 rez_exacto = np.abs(z_SC_apoyo - z_SC_centr)
-print(-rez_exacto)
+print(rez_exacto)
 
 nodal_loads = np.array([
     #[nelems//2, 0, 1,   0.0, 0.0,   0.0, -1000.0, 0.0]
-    [nelems//2, 0, 1,   0.0, -rez_exacto,   0.0, -1000.0, 0.0]
+    [nelems//2, 0, 1,   0.0, rez_exacto,   0.0, -1000.0, 0.0]
 ])
 
 
@@ -101,5 +101,5 @@ stabi.summary(ref={"Ref.": mu_cr_ref[idx],
 
 # ── Plots ─────────────────────────────────────────────────────────────────
 static.plot()
-stabi.plot(imode=0, scale=0.15)
+stabi.plot(imode=0, scale=0.18)
 plt.show()

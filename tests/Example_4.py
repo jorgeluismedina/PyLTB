@@ -83,11 +83,12 @@ ltbeamns = [83.73, 38.71, 22.18]
  
 print_header("Example 4 (full)  –  S-S monosymmetric double-taper | mid-span Fz at top flange")
 for L, ref, ltb in zip(Ls, refs, ltbeamns):
-    nelems = int(10 * L / 2)
+    nelems = int(5 * L)
     coords, sections, edata = make_mesh_full(sec_min, sec_max, L, nelems)
     vrest = np.array([[0, 1, 1, 0], [nelems, 0, 1, 0]])
     lrest = np.array([[0, 1, 0, 1, 0], [nelems, 1, 0, 1, 0]])
     loads = np.array([[nelems//2, 0, 1, 0.0, -rez, 0.0, -1000.0, 0.0]])
+    #loads = np.array([[nelems//2, 0, 3, 0.0, -rez, 0.0, -1000.0, 0.0]])
     _, mu = solve(coords, sections, edata, vrest, lrest, loads)
     print_row(f"{L} m", mu, ref, ltb)
  
@@ -99,7 +100,7 @@ ltbeamns_sym = [83.97, 38.64, 22.09]
 print_header("Example 4 (sym)   –  half-model with symmetric BCs")
 for L, ref, ltb in zip(Ls, refs, ltbeamns_sym):
     L_half = L / 2
-    nelems = int(10 * L_half)
+    nelems = int(5 * L_half)
     coords, sections, edata = make_mesh_half(sec_min, sec_max, L_half, nelems)
     vrest = np.array([[0, 0, 1, 0], [nelems, 1, 0, 1]])
     lrest = np.array([[0, 1, 0, 1, 0], [nelems, 0, 1, 0, 1]])

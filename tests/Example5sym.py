@@ -64,7 +64,7 @@ print(-rez_exacto)
 
 nodal_loads = np.array([
     #[nelems, 0, 1,   0.0, 0.0,   0.0, -500.0, 0.0]
-    [nelems, 0, 1,   0.0, -rez_exacto,   0.0, -500.0, 0.0]
+    [nelems, 0, 1,   0.0, rez_exacto,   0.0, -500.0, 0.0]
 ])
 
 

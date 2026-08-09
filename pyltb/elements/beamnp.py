@@ -28,13 +28,18 @@ class BeamNP(Beam):
 
     def init_geometry(self):
         """ Calcula las pendientes de las secciones"""
+        # a(x) cota del centro de corte medidad desde el eje de ref.
+        self.aS_i = self.section_i.z_from_ref(self.align, 1)
+        self.aS_j = self.section_j.z_from_ref(self.align, 1)
+        self.daS  = (self.aS_j - self.aS_i) / self.length
+
         aT_i = abs(self.section_i.zf1 - self.section_i.zS)
         aB_i = abs(self.section_i.zf2 - self.section_i.zS)
         aT_j = abs(self.section_j.zf1 - self.section_j.zS)
         aB_j = abs(self.section_j.zf2 - self.section_j.zS)
         self.daT = (aT_j - aT_i) / self.length
         self.daB = (aB_j - aB_i) / self.length
-        self.dzS = (self.section_j.zS - self.section_i.zS) / self.length
+        #self.dzS = (self.section_j.zS - self.section_i.zS) / self.length
         
     
 
@@ -99,16 +104,19 @@ class BeamNP(Beam):
         Incluye el efecto de la pendiente dzS.
         zS positivo si el SC esta por encima del centroide
         """
-        zS_i = self.section_i.zS
-        zS_j = self.section_j.zS
-        dzS  = self.dzS
+        ai = self.aS_i
+        aj = self.aS_j
+        da = self.daS
+        #zS_i = self.section_i.zS
+        #zS_j = self.section_j.zS
+        #dzS  = self.dzS
         self.T_ltr = np.eye(8)
-        self.T_ltr[0, 2] = -zS_i          # v_S = v_G - zS_i * θ
-        self.T_ltr[1, 2] = -dzS           # ∂v'_S/∂θ  (por la derivada de zS)
-        self.T_ltr[1, 3] = -zS_i          # ∂v'_S/∂θ'
-        self.T_ltr[4, 6] = -zS_j
-        self.T_ltr[5, 6] = -dzS
-        self.T_ltr[5, 7] = -zS_j
+        self.T_ltr[0, 2] = -ai#-zS_i          # v_S = v_ref - zS_i * θ
+        self.T_ltr[1, 2] = -da#-dzS           # ∂v'_S/∂θ  (por la derivada de zS)
+        self.T_ltr[1, 3] = -ai#-zS_i          # ∂v'_S/∂θ'
+        self.T_ltr[4, 6] = -aj#-zS_j
+        self.T_ltr[5, 6] = -da#-dzS
+        self.T_ltr[5, 7] = -aj#-zS_j
     
     
     def compute_verax_B(self, xi):
@@ -212,7 +220,7 @@ class BeamNP(Beam):
         M1 = -self.forces[2] # Momento izquierd
         N2 =  self.forces[3] # Axial derecha
         M2 =  self.forces[5]  # Momento derecha
-        V_z = (M1 - M2) / L  # Cortante
+        Vz = (M1 - M2) / L  # Cortante
 
         qzi = self.load_ints[1]
         qzj = self.load_ints[3]
@@ -252,7 +260,7 @@ class BeamNP(Beam):
             )
             
             # Término de Cortante Vz
-            term_V = -V_z * (np.outer(vec_dv, vec_t) + np.outer(vec_t, vec_dv))
+            term_V = -Vz * (np.outer(vec_dv, vec_t) + np.outer(vec_t, vec_dv))
 
             # Aporte de las cargas distribuidas
             term_Q = qzez * qz_xi * np.outer(vec_t, vec_t)   # ec. (20) Beyer — θ²

@@ -27,8 +27,7 @@ class StabilitySolver():
 
             pos = self.model.spring_pos[i]
             sec = self.model.sections[node]
-            ez  = sec.z_from_ref(1, pos)
-            #ez = -sec.z_from_ref(self.model.node_align[node], pos)
+            ez  = sec.z_from_ref(self.model.node_align[node], pos)
 
             K0_ltr[dof_v,  dof_v]  += kv
             K0_ltr[dof_v,  dof_t]  -= kv * ez   # acoplamiento (estudiar mejor el cambio de signo)
@@ -124,7 +123,8 @@ class StabilitySolver():
         dof_dt = self.model.altr_dofs[:, 3]
 
         # Vector de excentricidades zS en cada nodo
-        zS = np.array([self.model.sections[node].zS for node in range(n_nodes)])
+        zS = np.array([self.model.sections[n].z_from_ref(self.model.node_align[n], 1) 
+                       for n in range(n_nodes)])
 
         # Copia inicial de los modos (el giro y su derivada no cambian)
         modes_SC = self.modes.copy()

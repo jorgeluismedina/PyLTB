@@ -261,7 +261,7 @@ def plot_buckling_mode(model, mu_crs, modes, imode=0, scale=1.0, n_sec=2, curves
         gs  = fig.add_gridspec(2, 1, height_ratios=[6, 1], hspace=0.07)
         ax3d = fig.add_subplot(gs[0], projection='3d')
         ax2d = fig.add_subplot(gs[1])
-        _draw_2d_mode_ax(ax2d, model, modes[:, imode], legend_fontsize=10)
+        _draw_2d_mode_ax(ax2d, model, modes[:, imode], legend_fontsize=12)
         ax2d.tick_params(axis='y', labelsize=8)
     else:
         fig  = plt.figure(figsize=(_FIG_W, _FIG_H))
@@ -272,8 +272,8 @@ def plot_buckling_mode(model, mu_crs, modes, imode=0, scale=1.0, n_sec=2, curves
     _draw_3d_mode_ax(ax3d, model, mode_n, xis)
     _fix_3d_aspect(ax3d)
     draw_axis_arrows(ax3d, 0.0, 0.0, 0.0, 0.06)
-    ax3d.set_title(rf'Mode {imode+1}  —  $\mu_{{cr}} = {mu_crs[imode]:.3f}$',
-                   fontsize=12, pad=15)
+    #ax3d.set_title(rf'Mode {imode+1}  —  $\mu_{{cr}} = {mu_crs[imode]:.3f}$',
+    #               fontsize=12, pad=15)
   
 
     fig.subplots_adjust(left=0.05, right=0.95, top=0.93, bottom=0.07)
