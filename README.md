@@ -59,8 +59,8 @@ from pyltb.material import Material
 from pyltb.sections.section_ms import ISection_MS
 from pyltb.sections.section_utils import build_mesh
 from pyltb.model import StabilityModel
-from pyltb.static import StaticSolver
-from pyltb.stability import StabilitySolver
+from pyltb.solvers.static import StaticSolver
+from pyltb.solvers.stability import StabilitySolver
 
 # --- Material (units: N, m) ---
 steel = Material(E=2.1e11, nu=0.3, rho=7850)
@@ -227,7 +227,7 @@ model.add_nodal_loads(np.array([
 
 `fxpos`/`fzpos` are height codes for `Fx`/`Fz`, `fxez`/`fzez` their relative eccentricities,
 `Fx` positive in tension, `Fz` negative downwards, `Mx` the nodal bending moment.
-An eccentric `Fx` adds the static moment `ΔM = -Fx·ez` (from the centroid).
+An axial force applied off the reference axis is converted into an equivalent nodal moment.
 
 ### Distributed element loads — `add_elem_loads`
 
@@ -241,8 +241,8 @@ elem_loads = np.array([[e, 0, 1,  0.0, 0.0,  0.0, -3000.0, 0.0, -3000.0]
 model.add_elem_loads(elem_loads)
 ```
 
-Heights and eccentricities work as for nodal loads: `qz` contributes `Kg[θ,θ] += qz(x)·ez`
-and an eccentric `qx` a distributed moment `m = -qx·ez`.
+Heights and eccentricities work as for nodal loads: the height of `qz` drives the load height
+effect, and an eccentric `qx` produces a distributed moment along the element.
 
 ### Elastic restraints — `add_lateral_springs`
 
@@ -263,10 +263,10 @@ model.add_lateral_springs(np.array([
 | `kt` | Torsional stiffness | F·L | `θ` |
 | `kdt` | Warping stiffness | F | `θ'` |
 
-A spring at height `ez` restrains the lateral displacement of that fiber, `v + ez·θ`, so it
-contributes the coupled terms `-kv·ez` off-diagonal and `kv·ez²` on `θ` — which is why a top-flange
-brace is far more effective than the same spring at the centroid. `kdv`, `kt` and `kdt` go straight
-to their diagonal terms. A rigid brace is modelled with a penalty stiffness, e.g. `kv = E·Iy·1e6`.
+A lateral spring restrains the displacement of the fiber it sits on, so an off-axis spring also
+provides torsional restraint — a brace at the top flange is far more effective than the same spring
+at the centroid. `kdv`, `kt` and `kdt` have no height dependence. A rigid brace is modelled with a
+penalty stiffness, several orders of magnitude above the lateral stiffness of the member.
 
 ---
 
