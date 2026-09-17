@@ -91,6 +91,10 @@ class ISection_MS:
                    2 * self.Ir1 * self.zr1 +
                    2 * self.Ir2 * self.zr2) / self.Iz
 
+        # distancia de las fibras de las mesas al centroide
+        self.af1 = abs(self.zf1 - self.zS) # aT 
+        self.af2 = abs(self.zf2 - self.zS) # aB
+
     def compute_torsional_inertia(self):
         # Saint-Venant base
         self.It = (self.bf1 * self.tf1**3 +

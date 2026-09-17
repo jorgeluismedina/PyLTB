@@ -28,35 +28,38 @@ class BeamNP(Beam):
 
     def init_geometry(self):
         """ Calcula las pendientes de las secciones"""
-        # a(x) cota del centro de corte medidad desde el eje de ref.
-        self.aS_i = self.section_i.z_from_ref(self.align, 1)
-        self.aS_j = self.section_j.z_from_ref(self.align, 1)
-        self.daS  = (self.aS_j - self.aS_i) / self.length
+        # eS(x) cota del centro de corte medidad desde el eje de ref.
+        self.eS_i = self.section_i.z_from_ref(self.align, 1)
+        self.eS_j = self.section_j.z_from_ref(self.align, 1)
+        self.deS  = (self.eS_j - self.eS_i) / self.length
 
-        aT_i = abs(self.section_i.zf1 - self.section_i.zS)
-        aB_i = abs(self.section_i.zf2 - self.section_i.zS)
-        aT_j = abs(self.section_j.zf1 - self.section_j.zS)
-        aB_j = abs(self.section_j.zf2 - self.section_j.zS)
-        self.daT = (aT_j - aT_i) / self.length
-        self.daB = (aB_j - aB_i) / self.length
-        #self.dzS = (self.section_j.zS - self.section_i.zS) / self.length
+        #aT_i = abs(self.section_i.zf1 - self.section_i.zS)
+        #aB_i = abs(self.section_i.zf2 - self.section_i.zS)
+        #aT_j = abs(self.section_j.zf1 - self.section_j.zS)
+        #aB_j = abs(self.section_j.zf2 - self.section_j.zS)
+        self.daf1 = (self.section_j.af1 - self.section_i.af1) / self.length
+        self.daf2 = (self.section_j.af2 - self.section_i.af2) / self.length
         
     
 
     def interpolate_at_gauss(self, xi):
         """Interpola sección en punto de Gauss y añade inercias del taper."""
         L     = self.length
-        dx    = 1e-2        # 10 mm — paso para diferenciacion numerica
-        delta = dx / L
+        #dx  = 1e-2        # 10 mm — paso para diferenciacion numerica
+        #dxi = dx / L
+        dx  = self.length / 100   # en vez de 1e-2 fijo
+        dxi = dx / self.length # = 0.01
         
         gsec      = interpolate_section(self.section_i, self.section_j, xi)
-        sec_plus  = interpolate_section(self.section_i, self.section_j, xi + delta)
-        sec_minus = interpolate_section(self.section_i, self.section_j, xi - delta)
+        sec_plus  = interpolate_section(self.section_i, self.section_j, xi + dxi)
+        sec_minus = interpolate_section(self.section_i, self.section_j, xi - dxi)
         
         # Inercias de taper (Andrade 2005 / Beyer 2015 Apendice A)
-        I_psi  = 2 * (sec_plus.Iw - 2*gsec.Iw + sec_minus.Iw) / (delta * L)**2
-        I_wpsi = (sec_plus.Iw - sec_minus.Iw) / (2 * delta * L)
-        I_ypsi = 2 * (self.daT * gsec.Izf1 - self.daB * gsec.Izf2) # Aproximacion
+        I_psi  = 2 * (sec_plus.Iw - 2*gsec.Iw + sec_minus.Iw) / (dxi * L)**2
+        I_wpsi = (sec_plus.Iw - sec_minus.Iw) / (2 * dxi * L)
+        #I_psi  = 4 * (self.daf1 * gsec.Izf1 + self.daf2 * gsec.Izf2)
+        #I_wpsi = 2 * (self.daf1 * gsec.af1 * gsec.Izf1 + self.daf2 * gsec.af2 * gsec.Izf2) 
+        I_ypsi = 2 * (self.daf1 * gsec.Izf1 - self.daf2 * gsec.Izf2) # Aproximacion
         
         gsec.update_tapered_inertias(I_psi, I_wpsi, I_ypsi)
         return gsec
@@ -88,35 +91,34 @@ class BeamNP(Beam):
 
     def compute_verax_T(self):
         """ 
-        Matriz transformacion (6x6) de DOFs centroidales a DOFs del eje de ref.
-        e positiva si el eje de referencia está por encima del centroide
+        Matriz transformacion (6x6) 
+        DOFs centroidales --> DOFs eje de ref.
+        eG positiva si el eje de referencia está por encima del centroide
         """
-        ei = -self.section_i.z_from_ref(self.align, 0)
-        ej = -self.section_j.z_from_ref(self.align, 0)
+        eGi = -self.section_i.z_from_ref(self.align, 0)
+        eGj = -self.section_j.z_from_ref(self.align, 0)
         self.T_vrx = np.eye(6)
-        self.T_vrx[0, 2] = -ei # ui_ref = ui_G - ei * θi
-        self.T_vrx[3, 5] = -ej # uj_ref = uj_G - ej * θj
+        self.T_vrx[0, 2] = -eGi # ui_ref = ui_G - eGi * w,x_i
+        self.T_vrx[3, 5] = -eGj # uj_ref = uj_G - eGj * w,x_j
         #return T
     
     def compute_lator_T(self):
         """
-        Matriz de transformación (8x8) de DOF centroidales al centrode corte.
-        Incluye el efecto de la pendiente dzS.
-        zS positivo si el SC esta por encima del centroide
+        Matriz de transformación (8x8)
+        DOFs centro de corte --> DOFs eje de ref.
+        eS positivo si el SC esta por encima del centroide
         """
-        ai = self.aS_i
-        aj = self.aS_j
-        da = self.daS
-        #zS_i = self.section_i.zS
-        #zS_j = self.section_j.zS
-        #dzS  = self.dzS
+        eSi = self.eS_i
+        eSj = self.eS_j
+        deS = self.deS
+
         self.T_ltr = np.eye(8)
-        self.T_ltr[0, 2] = -ai#-zS_i          # v_S = v_ref - zS_i * θ
-        self.T_ltr[1, 2] = -da#-dzS           # ∂v'_S/∂θ  (por la derivada de zS)
-        self.T_ltr[1, 3] = -ai#-zS_i          # ∂v'_S/∂θ'
-        self.T_ltr[4, 6] = -aj#-zS_j
-        self.T_ltr[5, 6] = -da#-dzS
-        self.T_ltr[5, 7] = -aj#-zS_j
+        self.T_ltr[0, 2] = -eSi          
+        self.T_ltr[1, 2] = -deS          
+        self.T_ltr[1, 3] = -eSi          
+        self.T_ltr[4, 6] = -eSj
+        self.T_ltr[5, 6] = -deS
+        self.T_ltr[5, 7] = -eSj
     
     
     def compute_verax_B(self, xi):
@@ -158,13 +160,13 @@ class BeamNP(Beam):
     
     def compute_verax_D(self, section):
         """ Matriz constitutiva axial-flexión vertical con acoplamiento por excentricidad (2x2)"""
-        e   = section.z_from_ref(self.align, 0) # offset del centroide respecto al eje de referencia
+        eG  = section.z_from_ref(self.align, 0) # offset del centroide respecto al eje de referencia
         EA  = self.mater.E * section.A
         EIy = self.mater.E * section.Iy
 
         return np.array([
-            [ EA,          -EA * e        ],
-            [-EA * e,       EIy + EA * e**2]
+            [ EA,          -EA * eG        ],
+            [-EA * eG,      EIy + EA * eG**2]
         ])
     
     
