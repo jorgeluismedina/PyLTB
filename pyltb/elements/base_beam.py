@@ -47,7 +47,6 @@ class Beam():
         self.loads[4] =  (3*qzi + 7*qzj) * L / 20    +  0.5 * (mi + mj)
         self.loads[5] = -(2*qzi + 3*qzj) * L**2 / 60 + L/12 * (mj - mi)
 
-        #self._finalize_loads()
 
 
     def calculate_forces(self, glob_disps):
@@ -59,7 +58,7 @@ class Beam():
 
     def get_fields(self):
         L  = self.length
-        x  = np.linspace(0,L,2) # 3 puntos nomas
+        x  = np.linspace(0,L,2) # 2 puntos
         xi = x/L
 
         # Obtener funciones de forma y sus derivadas

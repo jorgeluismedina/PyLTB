@@ -33,33 +33,19 @@ class BeamNP(Beam):
         self.eS_j = self.section_j.z_from_ref(self.align, 1)
         self.deS  = (self.eS_j - self.eS_i) / self.length
 
-        #aT_i = abs(self.section_i.zf1 - self.section_i.zS)
-        #aB_i = abs(self.section_i.zf2 - self.section_i.zS)
-        #aT_j = abs(self.section_j.zf1 - self.section_j.zS)
-        #aB_j = abs(self.section_j.zf2 - self.section_j.zS)
+        # derivada de las distancias de las mesas al centro de corte
         self.daf1 = (self.section_j.af1 - self.section_i.af1) / self.length
         self.daf2 = (self.section_j.af2 - self.section_i.af2) / self.length
         
-    
 
     def interpolate_at_gauss(self, xi):
         """Interpola sección en punto de Gauss y añade inercias del taper."""
-        L     = self.length
-        #dx  = 1e-2        # 10 mm — paso para diferenciacion numerica
-        #dxi = dx / L
-        dx  = self.length / 100   # en vez de 1e-2 fijo
-        dxi = dx / self.length # = 0.01
-        
         gsec      = interpolate_section(self.section_i, self.section_j, xi)
-        sec_plus  = interpolate_section(self.section_i, self.section_j, xi + dxi)
-        sec_minus = interpolate_section(self.section_i, self.section_j, xi - dxi)
-        
-        # Inercias de taper (Andrade 2005 / Beyer 2015 Apendice A)
-        I_psi  = 2 * (sec_plus.Iw - 2*gsec.Iw + sec_minus.Iw) / (dxi * L)**2
-        I_wpsi = (sec_plus.Iw - sec_minus.Iw) / (2 * dxi * L)
-        #I_psi  = 4 * (self.daf1 * gsec.Izf1 + self.daf2 * gsec.Izf2)
-        #I_wpsi = 2 * (self.daf1 * gsec.af1 * gsec.Izf1 + self.daf2 * gsec.af2 * gsec.Izf2) 
-        I_ypsi = 2 * (self.daf1 * gsec.Izf1 - self.daf2 * gsec.Izf2) # Aproximacion
+        # Inercias de taper (Ronagh 2000 - Part I)
+        I_psi  = 4 * (self.daf1**2 * gsec.Izf1 + self.daf2**2 * gsec.Izf2)
+        I_wpsi = 2 * (self.daf1 * gsec.af1 * gsec.Izf1 + self.daf2 * gsec.af2 * gsec.Izf2) 
+        I_ypsi = 2 * (self.daf2 * gsec.Izf2 - self.daf1 * gsec.Izf1)
+        #I_ypsi = 2 * (self.daf1 * gsec.Izf1 - self.daf2 * gsec.Izf2)
         
         gsec.update_tapered_inertias(I_psi, I_wpsi, I_ypsi)
         return gsec
@@ -227,6 +213,8 @@ class BeamNP(Beam):
         qzi = self.load_ints[1]
         qzj = self.load_ints[3]
 
+        Kg = np.zeros((8,8))
+
         for xi, w in zip(self.gpoints, self.gweights):  
             # Interpolar fuerzas internas e intensidad de carga
             M_xi  = M1 * (1 - xi) + M2 * xi
@@ -267,10 +255,10 @@ class BeamNP(Beam):
             # Aporte de las cargas distribuidas
             term_Q = qzez * qz_xi * np.outer(vec_t, vec_t)   # ec. (20) Beyer — θ²
 
-            self.Kg_ltr += (term_N + term_M + term_V + term_Q) * w * L
+            Kg += (term_N + term_M + term_V + term_Q) * w * L
             
         # Traslacion de la matriz geometrica lateral-torsional al centroide
-        self.Kg_ltr = self.T_ltr.T @ self.Kg_ltr @ self.T_ltr
+        self.Kg_ltr = self.T_ltr.T @ Kg @ self.T_ltr
 
 
     def add_loads(self, qxpos, qzpos, qxrz, qzrz, qxi, qzi, qxj, qzj):

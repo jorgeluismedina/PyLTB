@@ -91,9 +91,6 @@ class ISection_MS:
                    2 * self.Ir1 * self.zr1 +
                    2 * self.Ir2 * self.zr2) / self.Iz
 
-        # distancia de las fibras de las mesas al centroide
-        self.af1 = abs(self.zf1 - self.zS) # aT 
-        self.af2 = abs(self.zf2 - self.zS) # aB
 
     def compute_torsional_inertia(self):
         # Saint-Venant base
@@ -126,6 +123,11 @@ class ISection_MS:
         I_ratio = self.Izf1 * self.Izf2 / (self.Izf1 + self.Izf2)
         hs = (self.zGf1 - self.zGf2)
         self.Iw = I_ratio * hs**2
+
+        # distancia de las fibras de las mesas al centroide
+        # aT y aB según Ronagh (2000) Part I, eq. 83
+        self.af1 = hs * self.Izf2 / (self.Izf1 + self.Izf2) # aT segun Ronagh (83)
+        self.af2 = hs - self.af1 # aB
 
     def compute_polar_radius(self):
         self.i0 = np.sqrt((self.Iy + self.Iz) / self.A + self.zS**2)

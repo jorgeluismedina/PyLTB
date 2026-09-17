@@ -41,7 +41,6 @@ class StaticSolver():
     
                 pos    = self.model.nloads_pos[i, 0]
                 rez    = self.model.nloads_rez[i, 0]
-                align  = self.model.node_align[node]
                 sec    = self.model.sections[node]
                 fxez   = sec.z_from_ref(0, pos) + rez
                   

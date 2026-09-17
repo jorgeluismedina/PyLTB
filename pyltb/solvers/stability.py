@@ -72,7 +72,7 @@ class StabilitySolver():
         
         return fdofs, sdofs
     
-    def solve(self):
+    def solve(self, nmodes=5):
         """ Resuelve el problema de estabilidad y retorna resultados."""
         # Ensambla
         self.K0 = self.assemble_lator_K0()
@@ -84,23 +84,17 @@ class StabilitySolver():
         Kg_ff = self.Kg[np.ix_(free, free)]
         
         # Resuelve autovectores y autovalores 
-        # invirtiendo el problema (-Kg * phi = lam_cr * K0 * phi)
-        # lam_cr = 1 / mu_cr, donde mu_cr es la carga crítica de pandeo
-        # los autovectores modes son columnas, ca columna es un modo de pandeo
-        lam_crs, modes = sp.linalg.eigh(-Kg_ff, K0_ff)
+        # Problema invertido: -Kg φ = λ K0 φ, con μ = 1/λ la carga crítica de pandeo
+        # eigh ordena λ ascendente → los k mayores λ son los k menores μ
+        # los autovectores modes son columnas, cada columna es un modo de pandeo
+        n = free.size
+        k = min(nmodes, n)
+        lam, modes = sp.linalg.eigh(-Kg_ff, K0_ff, subset_by_index=[n - k, n - 1])
 
-        # solo autovalores reales positivos
-        pos_indices = np.where(lam_crs > 1e-12)[0]
-        lam_crs = lam_crs[pos_indices]
-        modes  = modes[:, pos_indices]
-
-        # Calculo de mu_critico 
-        mu_crs = 1 / lam_crs
-
-        # Ordenamiento de autovalores de manera creciente
-        idx = mu_crs.argsort()
-        self.mu_crs = mu_crs[idx]
-        modes = modes[:, idx]
+        # λ descendente → μ ascendente; descarta λ ≤ 0 (pandeo con carga invertida)
+        lam, modes = lam[::-1], modes[:, ::-1]
+        pos = lam > 1e-12
+        self.mu_crs = 1 / lam[pos]
 
         # Reconstruccion de modos completos con apoyos incluidos
         self.modes = np.zeros((self.model.nltr_dofs, self.mu_crs.size))

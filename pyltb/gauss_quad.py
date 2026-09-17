@@ -25,7 +25,7 @@ def gauss_1d(npts):
         
         
     else:
-        msg = "The number of points should be in [2, 10]"
+        msg = "The number of points should be in [1, 4]"
         raise ValueError(msg)
 
     return pts, wts
