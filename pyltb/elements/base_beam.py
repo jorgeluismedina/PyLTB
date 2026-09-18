@@ -22,7 +22,7 @@ class Beam():
         self.disps  = np.zeros(6)
 
         # Parametros de cargas distribuidas
-        self.qz_loads = [] # (qzi, qzj, pos, rez) de cada carga distribuida
+        self.qz_loads = [] # (pos, ez, qzi, qzj) de cada carga distribuida
 
 
     def compute_equivalent_loads(self, qxi, qzi, qxj, qzj, mi, mj):

@@ -40,7 +40,7 @@ class BeamNP(Beam):
 
     def interpolate_at_gauss(self, xi):
         """Interpola sección en punto de Gauss y añade inercias del taper."""
-        gsec      = interpolate_section(self.section_i, self.section_j, xi)
+        gsec = interpolate_section(self.section_i, self.section_j, xi)
         # Inercias de taper (Ronagh 2000 - Part I)
         I_psi  = 4 * (self.daf1**2 * gsec.Izf1 + self.daf2**2 * gsec.Izf2)
         I_wpsi = 2 * (self.daf1 * gsec.af1 * gsec.Izf1 + self.daf2 * gsec.af2 * gsec.Izf2) 
@@ -253,7 +253,7 @@ class BeamNP(Beam):
 
             # Aporte de las cargas distribuidas — ec. (20) Beyer, θ²
             qz_ez = 0.0
-            for qzi, qzj, pos, rez in self.qz_loads:
+            for pos, rez, qzi, qzj in self.qz_loads:
                 ez     = section.z_from_ref(1, pos) + rez   # altura respecto al centro de corte
                 qz_xi  = qzi * (1 - xi) + qzj * xi          # intensidad en la rebanada
                 qz_ez += qz_xi * ez
@@ -267,10 +267,7 @@ class BeamNP(Beam):
 
     def add_loads(self, qxpos, qzpos, qxrz, qzrz, qxi, qzi, qxj, qzj):
         """Acumula una carga distribuida en coordenadas locales."""
-        self.qz_loads.append((qzi, qzj, int(qzpos), qzrz))
-        #self.load_ints = np.array([qxi, qzi, qxj, qzj], dtype=float) # intensidades de carga
-        #self.load_pos  = np.array([qxpos, qzpos], dtype=int)         # posiciones de carga
-        #self.load_rez  = np.array([qxrz, qzrz], dtype=float)         # excentricidad relativa de carga
+        self.qz_loads.append((int(qzpos), qzrz, qzi, qzj))
 
         # excentricidad positiva (+z) y carga axial positiva (traccion) generan momentos negativos
         qxezi = self.section_i.z_from_ref(self.align, int(qxpos)) + qxrz

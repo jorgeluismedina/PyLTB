@@ -226,7 +226,7 @@ class BeamP(Beam):
         NNj = self.NiNj_xi_matrix()
 
         KgQ = np.zeros((8, 8))
-        for qzi, qzj, pos, rez in self.qz_loads:
+        for pos, rez, qzi, qzj in self.qz_loads:
             ez     = self.section.z_from_ref(1, pos) + rez   # altura respecto al centro de corte
             Q_base = (qzi*NNi + qzj*NNj)   
             KgQ[self.idx_tt] += Q_base * ez # Bloque t-t (torsion)
@@ -246,10 +246,7 @@ class BeamP(Beam):
 
     def add_loads(self, qxpos, qzpos, qxrz, qzrz, qxi, qzi, qxj, qzj):
         """ Añade cargas en coordenadas locales """
-        self.qz_loads.append((qzi, qzj, int(qzpos), qzrz))
-        #self.load_ints = np.array([qxi, qzi, qxj, qzj], dtype=float) # intensidades de carga
-        #self.load_pos  = np.array([qxpos, qzpos], dtype=int)         # posiciones de carga
-        #self.load_rez  = np.array([qxrz, qzrz], dtype=float)         # excentricidad relativa de carga
+        self.qz_loads.append((int(qzpos), qzrz, qzi, qzj))
 
         # excentricidad positiva (+z) y carga axial positiva (traccion) generan momentos negativos
         qxez = self.section.z_from_ref(0, int(qxpos)) + qxrz
