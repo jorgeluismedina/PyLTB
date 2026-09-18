@@ -54,18 +54,20 @@ def solve(coords, sections, edata, vrest, lrest, nodal_loads):
  
  
 def print_header(title):
-    print("\n" + "═" * 80)
+    print("\n" + "═" * 92)
     print(f"  {title}")
-    print("═" * 80)
-    print(f"  {'L':>6}  {'μ_cr (PyLTB)':>14}  {'μ_cr (Ref)':>12}"
-          f"  {'μ_cr (LTBeamN)':>15}  {'ΔRef %':>8}  {'ΔLTBeamN %':>8}")
-    print("  " + "─" * 76)
- 
- 
+    print("═" * 92)
+    print(f"  {'L [m]':>8}  {'Reference':>12}  {'LTBeamN':>15}  {'ΔRef %':>8}"
+          f"  {'PyLTB':>14}  {'ΔRef %':>8}  {'ΔLTBeamN %':>11}")
+    print("  " + "─" * 88)
+
+
 def print_row(label, mu, ref, ltb):
-    dr = abs(mu - ref) / ref * 100
-    dl = abs(mu - ltb) / ltb * 100
-    print(f"  {label:>6}  {mu:>14.4f}  {ref:>12.4f}  {ltb:>15.4f}  {dr:>7.2f}%  {dl:>7.2f}%")
+    dlr = abs(ltb - ref) / ref * 100
+    dr  = abs(mu - ref) / ref * 100
+    dl  = abs(mu - ltb) / ltb * 100
+    print(f"  {label:>8}  {ref:>12.4f}  {ltb:>15.4f}  {dlr:>7.2f}%"
+          f"  {mu:>14.4f}  {dr:>7.2f}%  {dl:>10.2f}%")
  
  
 # ── data ───────────────────────────────────────────────────────────────────────
@@ -87,7 +89,7 @@ for L, ref, ltb in zip(Ls, refs, ltbeamns):
     lrest = np.array([[0, 1, 0, 1, 0], [nelems, 1, 0, 1, 0]])
     loads = np.array([[nelems//2, 0, 3, 0.0, 0.0, 0.0, -1000.0, 0.0]])
     _, mu = solve(coords, sections, edata, vrest, lrest, loads)
-    print_row(f"{L} m", mu, ref, ltb)
+    print_row(f"{L}", mu, ref, ltb)
  
  
 # ── Example 3 – symmetric (half model) ────────────────────────────────────────
@@ -103,6 +105,6 @@ for L, ref, ltb in zip(Ls, refs, ltbeamns_sym):
     lrest = np.array([[0, 1, 0, 1, 0], [nelems, 0, 1, 0, 1]])
     loads = np.array([[nelems, 0, 3, 0.0, 0.0, 0.0, -500.0, 0.0]])
     _, mu = solve(coords, sections, edata, vrest, lrest, loads)
-    print_row(f"{L} m", mu, ref, ltb)
+    print_row(f"{L}", mu, ref, ltb)
  
-print("\n" + "═" * 80 + "\n")
+print("\n" + "═" * 92 + "\n")

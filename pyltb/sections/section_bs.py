@@ -15,6 +15,8 @@ class ISection_BS:
         self.zG = h / 2
         self.zS = 0.0
         self.beta_z = 0.0
+
+        self.It_type = "plates"   # "villette" | "darwish" | "plates"
         self.compute_area()
         self.compute_bending_inertias()
         self.compute_torsional_inertia()
@@ -40,23 +42,51 @@ class ISection_BS:
         term2z = four_pi*self.r**2 * (self.tw/2 + self.r - 2*self.r/(3*four_pi))**2
         self.Iz = term1z + term + term2z
 
-    def compute_torsional_inertia(self): # constante torsional
-        # Saint-Venant base
-        self.It = (2 * self.bf * self.tf**3 +
-                   self.hw  * self.tw**3) / 3
-        #print(self.It)
-        if self.r > 0.0:
-            D = ((self.tf + self.r)**2 + 
-                  self.tw * (self.r + self.tw / 4)) / (2*self.r + self.tf) 
-                
-            alpha = (0.2204 * (self.tw / self.tf) +
-                     0.1355 * (self.r / self.tf) -
-                     0.0865 * (self.tw * self.r / self.tf**2) -
-                     0.0725 * (self.tw / self.tf)**2)
 
-            #corr_high = 0.0175 * (self.tf**8) / (self.bf**4)
-            I2tr = alpha * D**4 - 0.21*self.tf**4 #- corr_high
-            self.It += 2*I2tr
+    def It_villette(self):
+        """ Villette (2011) - formula que usa LTBeamN """
+        def ItV(d1, d2):
+            dmax, dmin = max(d1, d2), min(d1, d2)
+            return dmax * dmin**3 / 3 * (1 - dmin/dmax * (0.633 - 0.055 * dmin**3 / dmax**3))
+
+        ratio  = (6*self.tw + self.tf) / self.bf
+        alphaV = 4.0 if ratio <= 1.0 else 8 / (1 + ratio)
+
+        # rectangulos: alas + alma completa - solape alma/alas
+        It = (2 * ItV(self.bf, self.tf) +
+              ItV(self.h, self.tw) -
+              2 * (self.tw / self.bf)**2 * ItV(self.tw, self.tf))
+
+        # nudos alma-ala con fillets (se anulan si r = 0)
+        It += 2 * alphaV * (ItV(self.tw + 0.4*self.r, self.tf + 0.4*self.r) - ItV(self.tw, self.tf))
+        return It
+
+    def It_darwish(self):
+        """ Darwish & Johnston (1965) """
+        alpha = (-0.042 +
+                 0.2204 * (self.tw / self.tf) +
+                 0.1355 * (self.r / self.tf) -
+                 0.0865 * (self.tw * self.r / self.tf**2) -
+                 0.0725 * (self.tw / self.tf)**2)
+
+        D = ((self.tf + self.r)**2 + self.tw * (self.r + self.tw/4)) / (2*self.r + self.tf)
+
+        # Saint-Venant base + nudos alma-ala
+        It = (2 * self.bf * self.tf**3 + self.hw * self.tw**3) / 3
+        It += 2 * (alpha * D**4 - 0.21 * self.tf**4)
+        return It
+
+    def It_plates(self):
+        """ Suma simple de placas: Saint-Venant sin correccion de nudos """
+        return (2 * self.bf * self.tf**3 + self.hw * self.tw**3) / 3
+
+    def compute_torsional_inertia(self):
+            """ Inercia de torsion de Saint-Venant """
+    
+            formulas = {"villette": self.It_villette,
+                        "darwish":  self.It_darwish,
+                        "plates":   self.It_plates}
+            self.It = formulas[self.It_type]()
         
     def compute_warping_inertia(self):
         self.Iw = 0.25 * self.Iz * (self.h - self.tf)**2

@@ -1,6 +1,7 @@
 
 import numpy as np
 from scipy.linalg import cho_factor, cho_solve
+from shapely import node
 from pyltb.plotting import plot_diagrams
 
 
@@ -30,15 +31,15 @@ class StaticSolver():
                 self.model.loaded_nodes, 
                 self.model.nodal_loads
             )
-            F[dofs] += vals
+            #F[dofs] += vals
+            np.add.at(F, dofs, vals)
 
             for i, node in enumerate(self.model.loaded_nodes):
-                dof_Mx = self.model.avrx_dofs[node, 2]
                 Fx  = self.model.nodal_loads[i, 0]
-                
                 if Fx == 0.0:
                     continue
     
+                dof_Mx = self.model.avrx_dofs[node, 2]
                 pos    = self.model.nloads_pos[i, 0]
                 rez    = self.model.nloads_rez[i, 0]
                 sec    = self.model.sections[node]
@@ -46,10 +47,8 @@ class StaticSolver():
                   
                 F[dof_Mx] -= Fx * fxez #el trabajo de la fuerza axial tiene que ser negativo
 
-        if self.model.loaded_elems:
-            for id_elem in self.model.loaded_elems:
-                elem = self.model.elements[id_elem]
-                F[elem.vrx_dofs] += elem.loads
+        for elem in self.model.elements:
+            F[elem.vrx_dofs] += elem.loads
 
         return F
 

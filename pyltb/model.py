@@ -24,9 +24,10 @@ class StabilityModel():
         self.spring_kt = [] # rigidez torsional (theta)
 
         # cargas estatico
+        self.nodal_data   = np.empty((0,8))
         self.loaded_nodes = [] # tags de nodos cargados
-        self.nodal_loads = [] # cargas nodales
-        self.loaded_elems = [] #tags
+        #self.nodal_loads = [] # cargas nodales
+        #self.loaded_elems = [] #tags
 
     def add_materials(self, materials): 
         self.materials = materials
@@ -63,7 +64,7 @@ class StabilityModel():
                     visited[node] = True
 
 
-    def add_uniform_elements(self, elements_data):
+    def add_uniform_elements(self, elements_data, align=0):
         """ Funcion solo para añadir elementos barra """
         for elem_data in elements_data:
             etype, mat_id, nodei, nodej = elem_data
@@ -78,7 +79,8 @@ class StabilityModel():
 
             elem = ElementFactory.create_uniform(etype, mat, sec, 
                                                  coords, conec, 
-                                                 vrx_dofs, ltr_dofs)
+                                                 vrx_dofs, ltr_dofs,
+                                                 align=align)
             self.elements.append(elem)
         
         self.nelems = len(self.elements)
@@ -158,10 +160,11 @@ class StabilityModel():
             fxez, fzez : excentricidad de las cargas Fx y Fz respecto al eje de referencia local
             Fx, Fz, Mx : carga axial, vertical y momento nodal
         """
+        self.nodal_data   = np.vstack([self.nodal_data, nodal_loads_data])
         self.loaded_nodes = list(nodal_loads_data[:,0].astype(int))
-        self.nloads_pos   = nodal_loads_data[:,1:3].astype(int) # posiciones de Fx y Fz
-        self.nloads_rez   = nodal_loads_data[:,3:5].astype(float) # z relativo a la pos. de Fx y Fz
-        self.nodal_loads  = nodal_loads_data[:,5:].astype(float) # [Fx, Fz, Mx]
+        self.nloads_pos   = nodal_loads_data[:, 1:3].astype(int) # posiciones de Fx y Fz
+        self.nloads_rez   = nodal_loads_data[:, 3:5]             # z relativo a la pos. de Fx y Fz
+        self.nodal_loads  = nodal_loads_data[:, 5:]              # [Fx, Fz, Mx]
         
 
     def add_elem_loads(self, elem_loads_data):
@@ -174,21 +177,26 @@ class StabilityModel():
             qxi, qzi : intensidades en nodo i (axial, transversal)
             qxj, qzj : intensidades en nodo j (axial, transversal)
         """
-        self.loaded_elems   = list(elem_loads_data[:,0].astype(int))
-        self.eloads_pos = elem_loads_data[:,1:3].astype(int) # posiciones de qz y qx
-        self.eloads_rez = elem_loads_data[:,3:5].astype(float) # z relativo a la pos. de qz y qx
-        self.elem_loads = elem_loads_data[:,5:].astype(float)
         
-
         for load_data in elem_loads_data:
             id_elem = int(load_data[0])
-            qxpos   = load_data[1].astype(int)
-            qzpos   = load_data[2].astype(int)
+            qxpos   = int(load_data[1])
+            qzpos   = int(load_data[2])
             qxrz    = load_data[3].astype(float)
             qzrz    = load_data[4].astype(float)
             loads   = load_data[5:].astype(float)
 
             self.elements[id_elem].add_loads(qxpos, qzpos, qxrz, qzrz, *loads)
+
+
+    def clear_loads(self):
+        """ Elimina todas las cargas nodales y de elemento. """
+        self.nodal_data   = np.empty((0, 8))
+        self.loaded_nodes = []
+        for elem in self.elements:
+            elem.loads[:] = 0.0
+            elem.qz_loads.clear()
+
 
     def summary(self):
         L = float(self.coords[-1] - self.coords[0])

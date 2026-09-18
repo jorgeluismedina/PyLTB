@@ -5,16 +5,16 @@ from pyltb.shape_funcs import N_hermite, dN_hermite
 
 
 class BeamP(Beam):
-    def __init__(self, mater, section, coords, conec, vrx_dofs, ltr_dofs):
+    def __init__(self, mater, section, coords, conec, vrx_dofs, ltr_dofs, align=0):
         super().__init__(mater, coords, conec, vrx_dofs, ltr_dofs)
         self.section = section
-        self.align   = 0
+        self.align   = align
         self.set_dof_indices()
+        self.compute_lator_T()
 
         # Inicializar matrices de rigidez y geometricas
         self.compute_verax_K0()
         self.compute_lator_K0()
-
 
     
     def set_dof_indices(self):
@@ -33,6 +33,19 @@ class BeamP(Beam):
         self.idx_tt = np.ix_(idx_t, idx_t)
         self.idx_vt = np.ix_(idx_v, idx_t)
         self.idx_tv = np.ix_(idx_t, idx_v)
+
+
+    def compute_lator_T(self):
+        """
+        Matriz de transformación (8x8)
+        DOFs eje de referencia --> DOFs centro de corte:
+        """
+        eS = self.section.z_from_ref(self.align, 1)
+        self.T_ltr = np.eye(8)
+        self.T_ltr[0, 2] = -eS
+        self.T_ltr[1, 3] = -eS
+        self.T_ltr[4, 6] = -eS
+        self.T_ltr[5, 7] = -eS
 
 
     def ddNiddNj_matrix(self):
@@ -146,7 +159,8 @@ class BeamP(Beam):
         # Ensamblaje de matriz de rigidez flexión lateral y torsión con acoplamiento
         self.K0_ltr[self.idx_vv] = EIz * bending_base                      # Bloque v-v (Flexión lateral)
         self.K0_ltr[self.idx_tt] = EIw * bending_base + GIt * torsion_base # Bloque t-t (Torsión = Warping + St.Venant)
-        
+        # Traslacion de la matriz al eje de referencia
+        self.K0_ltr = self.T_ltr.T @ self.K0_ltr @ self.T_ltr
         
     
     def compute_lator_KgN(self): 
@@ -208,20 +222,14 @@ class BeamP(Beam):
     
     def compute_lator_KgQ(self):
         """ Matriz geométrica por altura de carga transversal distribuida (8x8) """
-        qzi  = self.load_ints[1]
-        qzj  = self.load_ints[3]
+        NNi = self.NiNj_1_xi_matrix()
+        NNj = self.NiNj_xi_matrix()
 
-        # Excentricidad de la carga vertical distribuida respecto al eje de referencia
-        pos  = self.load_pos[1]
-        rez  = self.load_rez[1]
-        qzez = self.section.z_from_ref(1, pos) + rez
-         
-        # qz(xi) = qzi*(1-xi) + qzj*xi
-        Q_base = (qzi * self.NiNj_1_xi_matrix() + 
-                  qzj * self.NiNj_xi_matrix())
-
-        KgQ = np.zeros((8, 8))       
-        KgQ[self.idx_tt] += Q_base * qzez # Bloque t-t (torsion)
+        KgQ = np.zeros((8, 8))
+        for qzi, qzj, pos, rez in self.qz_loads:
+            ez     = self.section.z_from_ref(1, pos) + rez   # altura respecto al centro de corte
+            Q_base = (qzi*NNi + qzj*NNj)   
+            KgQ[self.idx_tt] += Q_base * ez # Bloque t-t (torsion)
 
         return KgQ
 
@@ -231,22 +239,21 @@ class BeamP(Beam):
         KgN  = self.compute_lator_KgN()
         KgMV = self.compute_lator_KgMV()
         KgQ  = self.compute_lator_KgQ()
-        self.Kg_ltr = KgN + KgMV + KgQ
+        Kg_ltr = KgN + KgMV + KgQ
+        self.Kg_ltr = self.T_ltr.T @ Kg_ltr @ self.T_ltr
     
     
 
     def add_loads(self, qxpos, qzpos, qxrz, qzrz, qxi, qzi, qxj, qzj):
         """ Añade cargas en coordenadas locales """
-        self.load_ints = np.array([qxi, qzi, qxj, qzj], dtype=float) # intensidades de carga
-        self.load_pos  = np.array([qxpos, qzpos], dtype=int)         # posiciones de carga
-        self.load_rez  = np.array([qxrz, qzrz], dtype=float)         # excentricidad relativa de carga
+        self.qz_loads.append((qzi, qzj, int(qzpos), qzrz))
+        #self.load_ints = np.array([qxi, qzi, qxj, qzj], dtype=float) # intensidades de carga
+        #self.load_pos  = np.array([qxpos, qzpos], dtype=int)         # posiciones de carga
+        #self.load_rez  = np.array([qxrz, qzrz], dtype=float)         # excentricidad relativa de carga
 
         # excentricidad positiva (+z) y carga axial positiva (traccion) generan momentos negativos
         qxez = self.section.z_from_ref(0, int(qxpos)) + qxrz
         mi =  - qxi * qxez
         mj =  - qxj * qxez
 
-        self.compute_equivalent_loads(qxi, qzi, qxj, qzj, mi, mj)
-        
-
-    
+        self.loads += self.compute_equivalent_loads(qxi, qzi, qxj, qzj, mi, mj)        

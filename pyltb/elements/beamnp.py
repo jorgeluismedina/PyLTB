@@ -33,7 +33,7 @@ class BeamNP(Beam):
         self.eS_j = self.section_j.z_from_ref(self.align, 1)
         self.deS  = (self.eS_j - self.eS_i) / self.length
 
-        # derivada de las distancias de las mesas al centro de corte
+        # derivada de las distancias de los zg de las mesas al centro de corte
         self.daf1 = (self.section_j.af1 - self.section_i.af1) / self.length
         self.daf2 = (self.section_j.af2 - self.section_i.af2) / self.length
         
@@ -210,16 +210,15 @@ class BeamNP(Beam):
         M2 =  self.forces[5]  # Momento derecha
         Vz = (M1 - M2) / L  # Cortante
 
-        qzi = self.load_ints[1]
-        qzj = self.load_ints[3]
+        #qzi = self.load_ints[1]
+        #qzj = self.load_ints[3]
 
         Kg = np.zeros((8,8))
-
         for xi, w in zip(self.gpoints, self.gweights):  
             # Interpolar fuerzas internas e intensidad de carga
             M_xi  = M1 * (1 - xi) + M2 * xi
             N_xi  = N1 * (1 - xi) + N2 * xi 
-            qz_xi = qzi * (1 - xi) + qzj * xi
+            #qz_xi = qzi * (1 - xi) + qzj * xi
 
             # Propiedades geométricas en la rebanada actual
             section = self.interpolate_at_gauss(xi)
@@ -228,9 +227,9 @@ class BeamNP(Beam):
             beta_z  = section.beta_z
 
             # Excentricidad de la carga vertical distribuida respecto al eje de referencia
-            pos  = self.load_pos[1]
-            rez  = self.load_rez[1]
-            qzez = section.z_from_ref(1, pos) + rez
+            #pos  = self.load_pos[1]
+            #rez  = self.load_rez[1]
+            #qzez = section.z_from_ref(1, pos) + rez
 
             # Vectores de interpolación para ensamblar término a término
             vec_dv, vec_t, vec_dt = self.compute_interpolation_vectors(xi)
@@ -252,8 +251,13 @@ class BeamNP(Beam):
             # Término de Cortante Vz
             term_V = -Vz * (np.outer(vec_dv, vec_t) + np.outer(vec_t, vec_dv))
 
-            # Aporte de las cargas distribuidas
-            term_Q = qzez * qz_xi * np.outer(vec_t, vec_t)   # ec. (20) Beyer — θ²
+            # Aporte de las cargas distribuidas — ec. (20) Beyer, θ²
+            qz_ez = 0.0
+            for qzi, qzj, pos, rez in self.qz_loads:
+                ez     = section.z_from_ref(1, pos) + rez   # altura respecto al centro de corte
+                qz_xi  = qzi * (1 - xi) + qzj * xi          # intensidad en la rebanada
+                qz_ez += qz_xi * ez
+            term_Q = qz_ez * np.outer(vec_t, vec_t)   # ec. (20) Beyer — θ²
 
             Kg += (term_N + term_M + term_V + term_Q) * w * L
             
@@ -262,10 +266,11 @@ class BeamNP(Beam):
 
 
     def add_loads(self, qxpos, qzpos, qxrz, qzrz, qxi, qzi, qxj, qzj):
-        """ Añade cargas en coordenadas locales """
-        self.load_ints = np.array([qxi, qzi, qxj, qzj], dtype=float) # intensidades de carga
-        self.load_pos  = np.array([qxpos, qzpos], dtype=int)         # posiciones de carga
-        self.load_rez  = np.array([qxrz, qzrz], dtype=float)         # excentricidad relativa de carga
+        """Acumula una carga distribuida en coordenadas locales."""
+        self.qz_loads.append((qzi, qzj, int(qzpos), qzrz))
+        #self.load_ints = np.array([qxi, qzi, qxj, qzj], dtype=float) # intensidades de carga
+        #self.load_pos  = np.array([qxpos, qzpos], dtype=int)         # posiciones de carga
+        #self.load_rez  = np.array([qxrz, qzrz], dtype=float)         # excentricidad relativa de carga
 
         # excentricidad positiva (+z) y carga axial positiva (traccion) generan momentos negativos
         qxezi = self.section_i.z_from_ref(self.align, int(qxpos)) + qxrz
@@ -273,5 +278,5 @@ class BeamNP(Beam):
         mi = - qxi * qxezi
         mj = - qxj * qxezj
 
-        self.compute_equivalent_loads(qxi, qzi, qxj, qzj, mi, mj)
-        self.loads = self.T_vrx.T @ self.loads # trasladar cargas al eje centroidal        
+        equi_loads  = self.compute_equivalent_loads(qxi, qzi, qxj, qzj, mi, mj)
+        self.loads += self.T_vrx.T @ equi_loads # trasladar cargas al eje centroidal        

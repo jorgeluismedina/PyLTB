@@ -32,9 +32,11 @@ def solve(coords, sections, edata, nodal_loads, align=0):
  
  
 def print_row(label, mu, ref, ltb):
-    dr = abs(mu - ref) / ref * 100
-    dl = abs(mu - ltb) / ltb * 100
-    print(f"  {label:>8}  {mu:>14.4f}  {ref:>12.4f}  {ltb:>15.4f}  {dr:>7.2f}%  {dl:>7.2f}%")
+    dlr = abs(ltb - ref) / ref * 100
+    dr  = abs(mu - ref) / ref * 100
+    dl  = abs(mu - ltb) / ltb * 100
+    print(f"  {label:>8}  {ref:>12.4f}  {ltb:>15.4f}  {dlr:>7.2f}%"
+          f"  {mu:>14.4f}  {dr:>7.2f}%  {dl:>10.2f}%")
  
  
 # ── data ───────────────────────────────────────────────────────────────────────
@@ -56,16 +58,16 @@ edata    = np.array([[1, 0, e, e+1] for e in range(nelems)])
  
 # ── run ────────────────────────────────────────────────────────────────────────
  
-print("\n" + "═" * 80)
+print("\n" + "═" * 92)
 print("  Example 2  –  Cantilever tapered | combined N/Q tip loads  (L=4 m)")
-print("═" * 80)
-print(f"  {'r=N/Q':>8}  {'μ_cr (PyLTB)':>14}  {'μ_cr (Ref)':>12}"
-      f"  {'μ_cr (LTBeamN)':>15}  {'ΔRef %':>8}  {'ΔLTBeamN %':>8}")
-print("  " + "─" * 76)
+print("═" * 92)
+print(f"  {'r=N/Q':>8}  {'Reference':>12}  {'LTBeamN':>15}  {'ΔRef %':>8}"
+      f"  {'PyLTB':>14}  {'ΔRef %':>8}  {'ΔLTBeamN %':>11}")
+print("  " + "─" * 88)
  
 for r, ref, ltb in zip(ratios, refs, ltbeamns):
     loads = np.array([[nelems, 0, 3, 0.0, 0.0, r*-50000.0, -50000.0, 0.0]])
     _, mu = solve(coords, sections, edata, loads)
     print_row(f"r={r}", mu, ref, ltb)
  
-print("\n" + "═" * 80 + "\n")
+print("\n" + "═" * 92 + "\n")

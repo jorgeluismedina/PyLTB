@@ -21,10 +21,8 @@ class Beam():
         self.forces = np.zeros(6)
         self.disps  = np.zeros(6)
 
-        # Parametros de cargas en el plano
-        self.load_ints = np.zeros(4, dtype=float) # intensidades de carga
-        self.load_pos  = np.zeros(2, dtype=int)   # posiciones de carga
-        self.load_rez  = np.zeros(2, dtype=float) # excentricidad relativa de carga
+        # Parametros de cargas distribuidas
+        self.qz_loads = [] # (qzi, qzj, pos, rez) de cada carga distribuida
 
 
     def compute_equivalent_loads(self, qxi, qzi, qxj, qzj, mi, mj):
@@ -40,12 +38,13 @@ class Beam():
 
         """
         L = self.length
-        self.loads[0] =  (qxi/3 + qxj/6) * L
-        self.loads[1] =  (7*qzi + 3*qzj) * L / 20    -  0.5 * (mi + mj)
-        self.loads[2] =  (3*qzi + 2*qzj) * L**2 / 60 + L/12 * (mi - mj)
-        self.loads[3] =  (qxj/3 + qxi/6) * L
-        self.loads[4] =  (3*qzi + 7*qzj) * L / 20    +  0.5 * (mi + mj)
-        self.loads[5] = -(2*qzi + 3*qzj) * L**2 / 60 + L/12 * (mj - mi)
+        return np.array([
+            (qxi/3 + qxj/6) * L,
+            (7*qzi + 3*qzj) * L / 20    - 0.5 * (mi + mj),
+            (3*qzi + 2*qzj) * L**2 / 60 + L/12 * (mi - mj),
+            (qxj/3 + qxi/6) * L,
+            (3*qzi + 7*qzj) * L / 20    + 0.5 * (mi + mj),
+           -(2*qzi + 3*qzj) * L**2 / 60 + L/12 * (mj - mi)])
 
 
 

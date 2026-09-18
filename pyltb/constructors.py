@@ -17,7 +17,8 @@ class ElementFactory:
     @classmethod
     def create_uniform(cls, etype, material, section, 
                        coord, conec, 
-                       vrx_dofs, ltr_dofs):
+                       vrx_dofs, ltr_dofs,
+                       align=0):
         
         """Crea instancia del elemento."""
         if etype not in cls.registry:
@@ -25,7 +26,8 @@ class ElementFactory:
         
         return cls.registry[etype](material, section, 
                                    coord, conec, 
-                                   vrx_dofs, ltr_dofs)
+                                   vrx_dofs, ltr_dofs,
+                                   align=align)
     
 
     @classmethod
