@@ -70,8 +70,8 @@ def print_row(label, mu, ref, ltb):
  
 # ── data ───────────────────────────────────────────────────────────────────────
  
-sec_max = ISection_MS(h=0.60,      bf1=0.15, bf2=0.15, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0, r2=0)
-sec_min = ISection_MS(h=0.60*0.4,  bf1=0.15, bf2=0.15, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0, r2=0)
+sec_max = ISection_MS(h=0.60,      bf1=0.15, bf2=0.15, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0, r2=0, It_type="plates")
+sec_min = ISection_MS(h=0.60*0.4,  bf1=0.15, bf2=0.15, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0, r2=0, It_type="plates")
  
 # Eccentricity correction for symmetric half-model load
 rez = np.abs(sec_min.z_from_ref(3, 1) - sec_max.z_from_ref(3, 1))

@@ -13,8 +13,8 @@ from pyltb.solvers.stability import StabilitySolver
 materials = [Material(E=2.1e11, nu=0.3, rho=1.0)]
 
 # SECCIONES
-section1 = ISection_MS(h=0.6127, bf1=0.15, bf2=0.15, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0.00, r2=0.00) #[m]
-section2 = ISection_MS(h=0.6127*0.2, bf1=0.15, bf2=0.08, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0.00, r2=0.00) #[m]
+section1 = ISection_MS(h=0.6127, bf1=0.15, bf2=0.15, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0.00, r2=0.00, It_type="plates") #[m]
+section2 = ISection_MS(h=0.6127*0.2, bf1=0.15, bf2=0.08, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0.00, r2=0.00, It_type="plates") #[m]
 
 
 

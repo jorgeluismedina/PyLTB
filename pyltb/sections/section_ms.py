@@ -2,7 +2,7 @@
 import numpy as np
 
 class ISection_MS:
-    def __init__(self, h, bf1, bf2, tw, tf1, tf2, r1, r2):
+    def __init__(self, h, bf1, bf2, tw, tf1, tf2, r1, r2, It_type="villette"):
         self.h   = h     # total height
         self.bf1 = bf1   # top flange width
         self.bf2 = bf2   # bottom flange width
@@ -12,7 +12,7 @@ class ISection_MS:
         self.r1  = r1    # top fillets radious
         self.r2  = r2    # bottom fillets radious
 
-        self.It_type = "plates"   # "villette" | "darwish" | "plates"
+        self.It_type = It_type   # formula de It: "villette" | "darwish" | "plates"
         self.compute_basic()
         self.compute_area()
         self.compute_gravity_center()

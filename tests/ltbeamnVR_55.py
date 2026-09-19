@@ -13,7 +13,7 @@ material1 = Material(E=2.1e11, nu=0.3, rho=0.0) #[N/m2]
 materials = [material1]
 
 # Secciones
-sect1 = ISection_MS(h=0.3, bf1=0.15, bf2=0.20, tw=0.01, tf1=0.012, tf2=0.015, r1=0.0, r2=0.0) #[m]
+sect1 = ISection_MS(h=0.3, bf1=0.15, bf2=0.20, tw=0.01, tf1=0.012, tf2=0.015, r1=0.0, r2=0.0, It_type="plates") #[m]
 
 
 

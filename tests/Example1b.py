@@ -14,8 +14,8 @@ from pyltb.solvers.stability import StabilitySolver
 materials = [Material(E=2.1e11, nu=0.3, rho=1.0)]
 
 # SECCIONES
-section1 = ISection_MS(h=0.61, bf1=0.10, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00) #[m]
-section2 = ISection_MS(h=0.305, bf1=0.10, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00) #[m]
+section1 = ISection_MS(h=0.61, bf1=0.10, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00, It_type="plates") #[m]
+section2 = ISection_MS(h=0.305, bf1=0.10, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00, It_type="plates") #[m]
 
 
 # MALLA

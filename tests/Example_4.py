@@ -70,8 +70,8 @@ def print_row(label, mu, ref, ltb):
  
 # ── data ───────────────────────────────────────────────────────────────────────
  
-sec_max = ISection_MS(h=0.60,      bf1=0.20, bf2=0.05, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0, r2=0)
-sec_min = ISection_MS(h=0.60*0.4,  bf1=0.20, bf2=0.05, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0, r2=0)
+sec_max = ISection_MS(h=0.60,      bf1=0.20, bf2=0.05, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0, r2=0, It_type="plates")
+sec_min = ISection_MS(h=0.60*0.4,  bf1=0.20, bf2=0.05, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0, r2=0, It_type="plates")
  
 # Eccentricity correction: offset between SC at support (min) and SC at midspan (max)
 rez = np.abs(sec_min.z_from_ref(0, 1) - sec_max.z_from_ref(0, 1))

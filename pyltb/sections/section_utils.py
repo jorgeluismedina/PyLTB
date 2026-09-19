@@ -12,6 +12,7 @@ def interpolate_section(section1, section2, xi):
     Retorna una nueva ISection_MS con propiedades interpoladas en xi ∈ [0, 1].
     xi = 0 → seccion identica a section1
     xi = 1 → seccion identica a section2
+    La formula de It (It_type) se toma de section1.
     """
     h   = section1.h   + (section2.h   - section1.h)   * xi
     bf1 = section1.bf1 + (section2.bf1 - section1.bf1) * xi
@@ -23,7 +24,7 @@ def interpolate_section(section1, section2, xi):
     r2  = section1.r2  + (section2.r2  - section1.r2)  * xi
 
     return ISection_MS(h=h, bf1=bf1, bf2=bf2, tw=tw,
-                       tf1=tf1, tf2=tf2, r1=r1, r2=r2)
+                       tf1=tf1, tf2=tf2, r1=r1, r2=r2, It_type=section1.It_type)
 
 
 def interpolate_multiple_sections(section1, section2, points):

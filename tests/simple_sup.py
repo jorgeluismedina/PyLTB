@@ -19,12 +19,12 @@ material1 = Material(E=2.10e11, nu=0.3, rho=1.0)
 materials = [material1]
 
 # Secciones bisimétricas
-section1_bi = ISection_MS(h=0.61, bf1=0.18, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00)
-section2_bi = ISection_MS(h=0.305, bf1=0.18, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00)
+section1_bi = ISection_MS(h=0.61, bf1=0.18, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00, It_type="plates")
+section2_bi = ISection_MS(h=0.305, bf1=0.18, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00, It_type="plates")
 
 # Secciones monosimétricas (ala superior más ancha)
-section1_mono = ISection_MS(h=0.61, bf1=0.24, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00)
-section2_mono = ISection_MS(h=0.305, bf1=0.24, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00)
+section1_mono = ISection_MS(h=0.61, bf1=0.24, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00, It_type="plates")
+section2_mono = ISection_MS(h=0.305, bf1=0.24, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0.00, r2=0.00, It_type="plates")
 
 L = 4.5
 nelems = 36

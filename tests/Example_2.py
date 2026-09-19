@@ -44,8 +44,8 @@ def print_row(label, mu, ref, ltb):
 L      = 4.0
 nelems = 20
  
-sec_i = ISection_MS(h=0.6127,       bf1=0.15, bf2=0.15, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0, r2=0)
-sec_j = ISection_MS(h=0.6127*0.2,   bf1=0.15, bf2=0.15, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0, r2=0)
+sec_i = ISection_MS(h=0.6127,       bf1=0.15, bf2=0.15, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0, r2=0, It_type="plates")
+sec_j = ISection_MS(h=0.6127*0.2,   bf1=0.15, bf2=0.15, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0, r2=0, It_type="plates")
  
 ratios   = [0, 1, 2, 4]
 refs     = [1.979, 1.742, 1.475, 1.006]

@@ -14,11 +14,11 @@ from pyltb.solvers.stability import StabilitySolver
 materials = [Material(E=2.1e11, nu=0.3, rho=1.0)]
  
 # ── Secciones ─────────────────────────────────────────────────────────────
-sec_A = ISection_MS(h=0.324, bf1=0.27, bf2=0.27, tw=0.006, tf1=0.012, tf2=0.012, r1=0, r2=0)
-sec_B = ISection_MS(h=0.924, bf1=0.27, bf2=0.27, tw=0.006, tf1=0.012, tf2=0.012, r1=0, r2=0)
+sec_A = ISection_MS(h=0.324, bf1=0.27, bf2=0.27, tw=0.006, tf1=0.012, tf2=0.012, r1=0, r2=0, It_type="plates")
+sec_B = ISection_MS(h=0.924, bf1=0.27, bf2=0.27, tw=0.006, tf1=0.012, tf2=0.012, r1=0, r2=0, It_type="plates")
 
 # ── Malla ─────────────────────────────────────────────────────────────────
-L, nelems = 9, 24
+L, nelems = 9, 12
 nodes    = np.linspace(0, L, nelems + 1)
 sections = interpolate_multiple_sections(sec_A, sec_B, nodes / L)
 

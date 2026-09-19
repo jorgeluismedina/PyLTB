@@ -71,11 +71,11 @@ def print_row2(label, mu, ltb):
  
 Ls = [2, 4, 6, 8, 10]
  
-sec_bs_i = ISection_MS(h=0.610, bf1=0.18, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0, r2=0)
-sec_bs_j = ISection_MS(h=0.305, bf1=0.18, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0, r2=0)
+sec_bs_i = ISection_MS(h=0.610, bf1=0.18, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0, r2=0, It_type="plates")
+sec_bs_j = ISection_MS(h=0.305, bf1=0.18, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0, r2=0, It_type="plates")
  
-sec_ms_i = ISection_MS(h=0.610, bf1=0.10, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0, r2=0)
-sec_ms_j = ISection_MS(h=0.305, bf1=0.10, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0, r2=0)
+sec_ms_i = ISection_MS(h=0.610, bf1=0.10, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0, r2=0, It_type="plates")
+sec_ms_j = ISection_MS(h=0.305, bf1=0.10, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.010, r1=0, r2=0, It_type="plates")
  
  
 # ── Example 1a ─────────────────────────────────────────────────────────────────

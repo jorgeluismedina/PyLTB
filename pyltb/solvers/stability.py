@@ -98,7 +98,7 @@ class StabilitySolver():
 
         # Reconstruccion de modos completos con apoyos incluidos
         self.modes = np.zeros((self.model.nltr_dofs, self.mu_crs.size))
-        self.modes[free, :] = modes
+        self.modes[free, :] = modes[:, pos]
 
         self.transform_modes_to_SC()
         return self

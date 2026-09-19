@@ -4,7 +4,7 @@ import numpy as np
 
 # Seccion I bi-simetrica
 class ISection_BS:
-    def __init__(self, h, bf, tw, tf, r):
+    def __init__(self, h, bf, tw, tf, r, It_type="villette"):
         self.h  = h     # total height
         self.bf = bf    # flanges width
         self.tw = tw    # web thick
@@ -16,7 +16,7 @@ class ISection_BS:
         self.zS = 0.0
         self.beta_z = 0.0
 
-        self.It_type = "plates"   # "villette" | "darwish" | "plates"
+        self.It_type = It_type   # formula de It: "villette" | "darwish" | "plates"
         self.compute_area()
         self.compute_bending_inertias()
         self.compute_torsional_inertia()
