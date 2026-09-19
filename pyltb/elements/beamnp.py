@@ -51,30 +51,6 @@ class BeamNP(Beam):
         return gsec
         
 
-    def compute_interpolation_vectors(self, xi):
-        """ Vectores para ensamblar term-wise la parte de Kg_ltr"""
-        L  = self.length
-        N  = N_hermite(xi)
-        dN = dN_hermite(xi)
-
-        # Vector v' (derivada de la flexión lateral)
-        vec_dv = np.zeros(8)
-        vec_dv[0::4] = dN[0::2] / L  
-        vec_dv[1::4] = dN[1::2]
-
-        # Vector theta' (derivada del giro torsional)
-        vec_dt = np.zeros(8)
-        vec_dt[2::4] = dN[0::2] / L  
-        vec_dt[3::4] = dN[1::2]     
-            
-        # Vector theta (giro torsional)
-        vec_t = np.zeros(8)
-        vec_t[2::4] = N[0::2]        
-        vec_t[3::4] = N[1::2] * L          
-
-        return vec_dv, vec_t, vec_dt
-    
-
     def compute_verax_T(self):
         """ 
         Matriz transformacion (6x6) 
@@ -107,7 +83,7 @@ class BeamNP(Beam):
         self.T_ltr[5, 7] = -eSj
     
     
-    def compute_verax_B(self, xi):
+    def compute_verax_B0(self, xi):
         """ Matriz deformacion-desplazamiento axial flexion vertical (2x6)"""
         L   = self.length
         ddN = ddN_hermite(xi)
@@ -125,7 +101,7 @@ class BeamNP(Beam):
         return B
 
     
-    def compute_lator_B(self, xi):
+    def compute_lator_B0(self, xi):
         """ Matriz deformacion-desplazamiento torsion flexion lateral (3x8)"""
         L   = self.length
         dN  = dN_hermite(xi)
@@ -142,9 +118,30 @@ class BeamNP(Beam):
         B[2, 2::4] =  dN[0::2] / L
         B[2, 3::4] =  dN[1::2]
 
-        return B 
-    
-    def compute_verax_D(self, section):
+        return B
+
+
+    def compute_lator_Bg(self, xi):
+        """ Matriz deformacion-desplazamiento geometrica (3x8), ε_g = [v,x  θ,x  θ]"""
+        L  = self.length
+        N  = N_hermite(xi)
+        dN = dN_hermite(xi)
+
+        B = np.zeros((3,8))
+        # Pendiente lateral: dv/dx
+        B[0, 0::4] = dN[0::2] / L
+        B[0, 1::4] = dN[1::2]
+        # Torsión: γ = dθ/dx
+        B[1, 2::4] = dN[0::2] / L
+        B[1, 3::4] = dN[1::2]
+        # Giro torsional: θ
+        B[2, 2::4] = N[0::2]
+        B[2, 3::4] = N[1::2] * L
+
+        return B
+
+
+    def compute_verax_D0(self, section):
         """ Matriz constitutiva axial-flexión vertical con acoplamiento por excentricidad (2x2)"""
         eG  = section.z_from_ref(self.align, 0) # offset del centroide respecto al eje de referencia
         EA  = self.mater.E * section.A
@@ -156,7 +153,7 @@ class BeamNP(Beam):
         ])
     
     
-    def compute_lator_D(self, section):
+    def compute_lator_D0(self, section):
         """ Matriz constitutiva torsion flexion lateral (3x3)"""
         EIz = self.mater.E * section.Iz
         EIw = self.mater.E * section.Iw
@@ -171,12 +168,38 @@ class BeamNP(Beam):
             [0,        EIw,      EI_wpsi],
             [EI_ypsi,  EI_wpsi,  GIt + EI_psi]
         ])
-    
+
+
+    def compute_lator_Dg(self, xi, section):
+        """ Matriz de esfuerzos y cargas (3x3) """
+        # Esfuerzos internos en los extremos (signo opuesto a la fuerza en el nudo i)
+        N1, M1 = -self.forces[0], -self.forces[2]
+        N2, M2 =  self.forces[3],  self.forces[5]
+
+        # Axial y momento lineales en el elemento, cortante constante
+        N = N1 * (1 - xi) + N2 * xi
+        M = M1 * (1 - xi) + M2 * xi
+        V = (M1 - M2) / self.length
+
+        # Cargas distribuidas por su altura respecto al centro de corte
+        qz_ez = 0.0
+        for pos, rez, qzi, qzj in self.qz_loads:
+            ez     = section.z_from_ref(1, pos) + rez
+            qz_ez += (qzi * (1 - xi) + qzj * xi) * ez
+
+        zS     = section.zS
+        i02    = section.i0**2
+        beta_z = section.beta_z
+
+        return np.array([
+            [N,            N * zS + M,                 -V   ],
+            [N * zS + M,   N * i02 - 2 * beta_z * M,    0   ],
+            [-V,           0,                          qz_ez]
+        ])
 
 
     def compute_K0_matrices(self):
-        """ Matriz de rigidez Axial-Flexion vertical (6x6)"""
-        """ Matriz de rigidez Torsion-Flexion lateral (8x8)"""
+        """ Matrices de rigidez axial-flexion vertical (6x6) y torsion-flexion lateral (8x8)"""
         L = self.length
 
         for xi, w in zip(self.gpoints, self.gweights):
@@ -184,84 +207,37 @@ class BeamNP(Beam):
             section = self.interpolate_at_gauss(xi)
 
             # Matrices constitutivas
-            D_vrx = self.compute_verax_D(section)
-            D_ltr = self.compute_lator_D(section)
+            D0_vrx = self.compute_verax_D0(section)
+            D0_ltr = self.compute_lator_D0(section)
 
             # Matrices de deformación-desplazamiento
-            B_vrx = self.compute_verax_B(xi)
-            B_ltr = self.compute_lator_B(xi)
+            B0_vrx = self.compute_verax_B0(xi)
+            B0_ltr = self.compute_lator_B0(xi)
 
             # Acumular contribuciones
-            self.K0_vrx += (B_vrx.T @ D_vrx @ B_vrx) * w * L
-            self.K0_ltr += (B_ltr.T @ D_ltr @ B_ltr) * w * L
+            self.K0_vrx += (B0_vrx.T @ D0_vrx @ B0_vrx) * w * L
+            self.K0_ltr += (B0_ltr.T @ D0_ltr @ B0_ltr) * w * L
         
-        # Trasalacion de las matrices de rigidez al centroide
-        self.K0_vrx = self.T_vrx.T @ self.K0_vrx @ self.T_vrx 
+        # Traslacion de K0_vrx al centroide y de K0_ltr al eje de referencia
+        self.K0_vrx = self.T_vrx.T @ self.K0_vrx @ self.T_vrx
         self.K0_ltr = self.T_ltr.T @ self.K0_ltr @ self.T_ltr
 
 
     def update_lator_Kg(self):
-        """ Matriz geometrica Torsion-Flexion lateral (8x8)"""
-        L = self.length
-        
-        N1 = -self.forces[0] # Axial izquierda
-        M1 = -self.forces[2] # Momento izquierd
-        N2 =  self.forces[3] # Axial derecha
-        M2 =  self.forces[5]  # Momento derecha
-        Vz = (M1 - M2) / L  # Cortante
-
-        #qzi = self.load_ints[1]
-        #qzj = self.load_ints[3]
-
+        """ Matriz geometrica torsion-flexion lateral (8x8)"""
+        L  = self.length
         Kg = np.zeros((8,8))
-        for xi, w in zip(self.gpoints, self.gweights):  
-            # Interpolar fuerzas internas e intensidad de carga
-            M_xi  = M1 * (1 - xi) + M2 * xi
-            N_xi  = N1 * (1 - xi) + N2 * xi 
-            #qz_xi = qzi * (1 - xi) + qzj * xi
 
-            # Propiedades geométricas en la rebanada actual
+        for xi, w in zip(self.gpoints, self.gweights):
+            # Interpolar sección en punto de Gauss
             section = self.interpolate_at_gauss(xi)
-            zS      = section.zS
-            i02     = section.i0**2
-            beta_z  = section.beta_z
 
-            # Excentricidad de la carga vertical distribuida respecto al eje de referencia
-            #pos  = self.load_pos[1]
-            #rez  = self.load_rez[1]
-            #qzez = section.z_from_ref(1, pos) + rez
+            Dg_ltr = self.compute_lator_Dg(xi, section)
+            Bg_ltr = self.compute_lator_Bg(xi)
 
-            # Vectores de interpolación para ensamblar término a término
-            vec_dv, vec_t, vec_dt = self.compute_interpolation_vectors(xi)
+            Kg += (Bg_ltr.T @ Dg_ltr @ Bg_ltr) * w * L
 
-            # Ensamblaje numérico de la Ecuación 17 (Beyer et al.)
-            # Términos de Fuerza Axial N
-            term_N = N_xi * (
-                np.outer(vec_dv, vec_dv) + 
-                i02 * np.outer(vec_dt, vec_dt) + 
-                zS * (np.outer(vec_dv, vec_dt) + np.outer(vec_dt, vec_dv))
-            )
-            
-            # Términos de Momento My
-            term_M = M_xi * (
-                np.outer(vec_dv, vec_dt) + np.outer(vec_dt, vec_dv) - 
-                2 * beta_z * np.outer(vec_dt, vec_dt)
-            )
-            
-            # Término de Cortante Vz
-            term_V = -Vz * (np.outer(vec_dv, vec_t) + np.outer(vec_t, vec_dv))
-
-            # Aporte de las cargas distribuidas — ec. (20) Beyer, θ²
-            qz_ez = 0.0
-            for pos, rez, qzi, qzj in self.qz_loads:
-                ez     = section.z_from_ref(1, pos) + rez   # altura respecto al centro de corte
-                qz_xi  = qzi * (1 - xi) + qzj * xi          # intensidad en la rebanada
-                qz_ez += qz_xi * ez
-            term_Q = qz_ez * np.outer(vec_t, vec_t)   # ec. (20) Beyer — θ²
-
-            Kg += (term_N + term_M + term_V + term_Q) * w * L
-            
-        # Traslacion de la matriz geometrica lateral-torsional al centroide
+        # Traslacion de la matriz geometrica al eje de referencia
         self.Kg_ltr = self.T_ltr.T @ Kg @ self.T_ltr
 
 
