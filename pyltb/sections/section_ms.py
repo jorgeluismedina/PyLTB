@@ -3,19 +3,19 @@ import numpy as np
 
 class ISection_MS:
     def __init__(self, h, bf1, bf2, tw, tf1, tf2, r1, r2, It_type="villette"):
-        self.h   = h     # total height
-        self.bf1 = bf1   # top flange width
-        self.bf2 = bf2   # bottom flange width
-        self.tw  = tw    # web thick
-        self.tf1 = tf1   # top flange thick
-        self.tf2 = tf2   # botttom flange thick
-        self.r1  = r1    # top fillets radious
-        self.r2  = r2    # bottom fillets radious
+        self.h   = h     # Altura total
+        self.bf1 = bf1   # Ancho mesa superior
+        self.bf2 = bf2   # Ancho mesa inferior
+        self.tw  = tw    # Espesor alma
+        self.tf1 = tf1   # Espesor mesa superior
+        self.tf2 = tf2   # Espesor mesa inferior
+        self.r1  = r1    # radio de fillet superior
+        self.r2  = r2    # radio de fillet inferior
 
         self.It_type = It_type   # formula de It: "villette" | "darwish" | "plates"
         self.compute_basic()
         self.compute_area()
-        self.compute_gravity_center()
+        self.compute_centroid()
         self.compute_bending_inertias()
         self.compute_shear_center()
         self.compute_torsional_inertia()
@@ -32,18 +32,18 @@ class ISection_MS:
         self.Af1  = self.bf1 * self.tf1
         self.Iyf1 = self.bf1 * self.tf1**3 / 12
         self.Izf1 = self.tf1 * self.bf1**3 / 12
-        self.zGf1 = self.h - self.tf1 / 2
+        self.zCf1 = self.h - self.tf1 / 2
         # propiedades ala inferior
         self.Af2  = self.bf2 * self.tf2
         self.Iyf2 = self.bf2 * self.tf2**3 / 12
         self.Izf2 = self.tf2 * self.bf2**3 / 12
-        self.zGf2 = self.tf2 / 2
+        self.zCf2 = self.tf2 / 2
         # propiedades alma
         self.hw  = self.h - self.tf1 - self.tf2
         self.Aw  = self.hw * self.tw
         self.Iyw = self.tw * self.hw**3 / 12
         self.Izw = self.hw * self.tw**3 / 12
-        self.zGw = self.tf2 + self.hw/2
+        self.zCw = self.tf2 + self.hw/2
         # terminos repetidos
         one_qpi = 1 - np.pi/4
         four_pi = 4 * one_qpi
@@ -51,30 +51,30 @@ class ISection_MS:
         self.Ar1  = one_qpi * self.r1**2
         self.Ir1  = (1/3 - np.pi/16 - 1/(9*four_pi)) * self.r1**4
         self.vr1  = (1 - 2/(3*four_pi)) * self.r1
-        self.zGr1 = self.h - self.tf1 - self.vr1
+        self.zCr1 = self.h - self.tf1 - self.vr1
         self.yr1  = self.tw/2 + self.vr1
         # propiedades fillets inferiores
         self.Ar2  = one_qpi * self.r2**2
         self.Ir2  = (1/3 - np.pi/16 - 1/(9*four_pi)) * self.r2**4
         self.vr2  = (1 - 2/(3*four_pi)) * self.r2
-        self.zGr2 = self.tf2 + self.vr2
+        self.zCr2 = self.tf2 + self.vr2
         self.yr2  = self.tw/2 + self.vr2
 
     def compute_area(self):
         self.A = self.Af1 + self.Af2 + self.Aw + 2*self.Ar1 + 2*self.Ar2
 
-    def compute_gravity_center(self):
-        self.zG = (self.Af1 * self.zGf1 + 
-                   self.Af2 * self.zGf2 +
-                   self.Aw * self.zGw +
-                   2 * self.Ar1 * self.zGr1 +
-                   2 * self.Ar2 * self.zGr2) / self.A
+    def compute_centroid(self):
+        self.zC = (self.Af1 * self.zCf1 + 
+                   self.Af2 * self.zCf2 +
+                   self.Aw * self.zCw +
+                   2 * self.Ar1 * self.zCr1 +
+                   2 * self.Ar2 * self.zCr2) / self.A
         # centroides de las partes respecto al centroide total
-        self.zf1 = self.zGf1 - self.zG
-        self.zf2 = self.zGf2 - self.zG
-        self.zw  = self.zGw - self.zG
-        self.zr1 = self.zGr1 - self.zG
-        self.zr2 = self.zGr2 - self.zG
+        self.zf1 = self.zCf1 - self.zC
+        self.zf2 = self.zCf2 - self.zC
+        self.zw  = self.zCw - self.zC
+        self.zr1 = self.zCr1 - self.zC
+        self.zr2 = self.zCr2 - self.zC
 
     def compute_bending_inertias(self):
         Iyf1 = self.Iyf1 + self.Af1 * self.zf1**2
@@ -151,10 +151,10 @@ class ISection_MS:
     def compute_warping_inertia(self):
         # En esta funcion solo se toma en cuenta la contribucion de las alas
         I_ratio = self.Izf1 * self.Izf2 / (self.Izf1 + self.Izf2)
-        hs = (self.zGf1 - self.zGf2)
+        hs = (self.zCf1 - self.zCf2)
         self.Iw = I_ratio * hs**2
 
-        # Distancia de los zG de las mesas al centro de corte
+        # Distancia de los zC de las mesas al centro de corte
         # aT y aB según Ronagh (2000) Part I, eq. 83
         self.af1 = hs * self.Izf2 / (self.Izf1 + self.Izf2) #aT
         self.af2 = hs - self.af1 # aB
@@ -190,8 +190,8 @@ class ISection_MS:
         heights = np.array([
             0.0, 
             self.zS,
-            -self.zG,
-            self.h - self.zG
+            -self.zC,
+            self.h - self.zC
         ]) # referenciado todo al centroide
 
         return heights[pos] - heights[ref]
@@ -223,8 +223,8 @@ class ISection_MS:
         print(f"  It = {self.It:.4e}")
         print(f"  Iw = {self.Iw:.4e}")
         print(f"  βz = {self.beta_z:.6f}")
-        #print()
-        print(f"  zG = {self.zG:.6f}  (from bottom fiber)")
+        
+        print(f"  zC = {self.zC:.6f}  (from bottom fiber)")
         print(f"  zS = {self.zS:.6f}  (relative to centroid)")
         print(f"  i0 = {self.i0:.6f}  (respect to shear center)")
         

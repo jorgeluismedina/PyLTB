@@ -203,7 +203,7 @@ def _draw_3d_mode_ax(ax, model, mode_n, xis):
             sec      = section_at(elem, xi)
             bf1, bf2 = get_flange_widths(sec)
             align    = elem.align
-            zG = sec.z_from_ref(align, 0)
+            zC = sec.z_from_ref(align, 0)
             zS = sec.z_from_ref(align, 1)
             zb = sec.z_from_ref(align, 2)
             zt = sec.z_from_ref(align, 3)
@@ -218,7 +218,7 @@ def _draw_3d_mode_ax(ax, model, mode_n, xis):
                 [x_k, -bf1/2, zt], [x_k, bf1/2,  zt],  # alas sup
                 [x_k, -bf2/2, zb], [x_k, bf2/2,  zb],  # alas inf
                 [x_k,  0.0,   zt], [x_k, 0.0,    zb],  # centros de alas
-                [x_k,  0.0,   zG], [x_k, 0.0,    zS],  # G, S
+                [x_k,  0.0,   zC], [x_k, 0.0,    zS],  # C, S
             ])
             kp_undef_list.append(kp)
             kp_def_list.append(deform_keypoints(kp, v_arr[k], th_arr[k], zS))

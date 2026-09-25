@@ -12,7 +12,7 @@ class ISection_BS:
         self.r  = r     # radius of fillets
 
         self.hw = h - 2*tf # altura del alma entre flanges
-        self.zG = h / 2
+        self.zC = h / 2
         self.zS = 0.0
         self.beta_z = 0.0
 
@@ -35,7 +35,7 @@ class ISection_BS:
         term = 4*self.r**4 * (1/3 - np.pi/16 - 1/(9*four_pi))
 
         term1y = 1/12 * (self.bf * self.h**3 - (self.bf - self.tw) * self.hw**3)
-        term2y = four_pi*self.r**2 * (self.zG - self.tf - self.r + 2*self.r/(3*four_pi))**2
+        term2y = four_pi*self.r**2 * (self.zC - self.tf - self.r + 2*self.r/(3*four_pi))**2
         self.Iy = term1y + term + term2y
 
         term1z = 1/6*self.tf*self.bf**3 + 1/12*self.tw**3*self.hw
@@ -107,8 +107,8 @@ class ISection_BS:
         heights = np.array([
             0.0, 
             self.zS,
-            -self.zG,
-            self.h - self.zG
+            -self.zC,
+            self.h - self.zC
         ]) # referenciado todo al centroide
 
         return heights[pos] - heights[ref]
@@ -135,7 +135,7 @@ class ISection_BS:
         print(f"  It = {self.It:.4e}")
         print(f"  Iw = {self.Iw:.4e}")
         print(f"  βz = {self.beta_z:.6f}")
-        print(f"  zG = {self.zG:.6f}  (from bottom fiber)")
+        print(f"  zC = {self.zC:.6f}  (from bottom fiber)")
         print(f"  zS = {self.zS:.6f}  (relative to centroid)")
         print(f"  i0 = {self.i0:.6f}  (respect to shear center)")
         print("\n" + "="*50 + "\n")

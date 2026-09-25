@@ -33,7 +33,7 @@ class BeamNP(Beam):
         self.eS_j = self.section_j.z_from_ref(self.align, 1)
         self.deS  = (self.eS_j - self.eS_i) / self.length
 
-        # derivada de las distancias de los zg de las mesas al centro de corte
+        # derivada de las distancias de los zC de las mesas al centro de corte
         self.daf1 = (self.section_j.af1 - self.section_i.af1) / self.length
         self.daf2 = (self.section_j.af2 - self.section_i.af2) / self.length
         
@@ -41,11 +41,11 @@ class BeamNP(Beam):
     def interpolate_at_gauss(self, xi):
         """Interpola sección en punto de Gauss y añade inercias del taper."""
         gsec = interpolate_section(self.section_i, self.section_j, xi)
-        # Inercias de taper (Ronagh 2000 - Part I)
+        # Inercias de taper (Kitipornchair y Trahair 1975)
         I_psi  = 4 * (self.daf1**2 * gsec.Izf1 + self.daf2**2 * gsec.Izf2)
         I_wpsi = 2 * (self.daf1 * gsec.af1 * gsec.Izf1 + self.daf2 * gsec.af2 * gsec.Izf2) 
-        I_ypsi = 2 * (self.daf2 * gsec.Izf2 - self.daf1 * gsec.Izf1)
-        #I_ypsi = 2 * (self.daf1 * gsec.Izf1 - self.daf2 * gsec.Izf2)
+        I_ypsi = 2 * (self.daf2 * gsec.Izf2 - self.daf1 * gsec.Izf1) # derivado usando la cinematica de beyer2015
+        #I_ypsi = 2 * (self.daf1 * gsec.Izf1 - self.daf2 * gsec.Izf2) # original
         
         gsec.update_tapered_inertias(I_psi, I_wpsi, I_ypsi)
         return gsec
@@ -55,14 +55,14 @@ class BeamNP(Beam):
         """ 
         Matriz transformacion (6x6) 
         DOFs centroidales --> DOFs eje de ref.
-        eG positiva si el eje de referencia está por encima del centroide
+        eC positiva si el eje de referencia está por encima del centroide
         """
-        eGi = -self.section_i.z_from_ref(self.align, 0)
-        eGj = -self.section_j.z_from_ref(self.align, 0)
+        eCi = -self.section_i.z_from_ref(self.align, 0)
+        eCj = -self.section_j.z_from_ref(self.align, 0)
         self.T_vrx = np.eye(6)
-        self.T_vrx[0, 2] = -eGi # ui_ref = ui_G - eGi * w,x_i
-        self.T_vrx[3, 5] = -eGj # uj_ref = uj_G - eGj * w,x_j
-        #return T
+        self.T_vrx[0, 2] = -eCi # ui_ref = ui_C - eCi * w,x_i
+        self.T_vrx[3, 5] = -eCj # uj_ref = uj_C - eCj * w,x_j
+
     
     def compute_lator_T(self):
         """
@@ -143,13 +143,13 @@ class BeamNP(Beam):
 
     def compute_verax_D0(self, section):
         """ Matriz constitutiva axial-flexión vertical con acoplamiento por excentricidad (2x2)"""
-        eG  = section.z_from_ref(self.align, 0) # offset del centroide respecto al eje de referencia
+        eC  = section.z_from_ref(self.align, 0) # offset del centroide respecto al eje de referencia
         EA  = self.mater.E * section.A
         EIy = self.mater.E * section.Iy
 
         return np.array([
-            [ EA,          -EA * eG        ],
-            [-EA * eG,      EIy + EA * eG**2]
+            [ EA,          -EA * eC         ],
+            [-EA * eC,      EIy + EA * eC**2]
         ])
     
     

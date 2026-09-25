@@ -48,10 +48,10 @@ class StabilitySolver():
 
         for i, node in enumerate(self.model.loaded_nodes):
             dof_t = self.model.altr_dofs[node, 2]      # DOF θ del nodo
-            Fz    = self.model.nodal_loads[i, 1]      # carga vertical
+            Fz    = self.model.nodal_loads[i, 1]       # carga vertical
 
-            pos  = self.model.nloads_pos[i, 1]   # código de altura
-            rez  = self.model.nloads_rez[i, 1]    # z relativo a la posición de la carga
+            pos  = self.model.nodal_loads_pos[i, 1]    # código de altura
+            rez  = self.model.nodal_loads_rez[i, 1]    # z relativo a la posición de la carga
             sec  = self.model.sections[node]
             fzez = sec.z_from_ref(1, pos) + rez
             
@@ -100,13 +100,12 @@ class StabilitySolver():
         self.modes = np.zeros((self.model.nltr_dofs, self.mu_crs.size))
         self.modes[free, :] = modes[:, pos]
 
-        self.transform_modes_to_SC()
+        self.transform_modes_to_S()
         return self
 
-    def transform_modes_to_SC(self):
+    def transform_modes_to_S(self):
         """
-        Convierte self.modes (DOFs centroidales) a self.modes_SC (DOFs en el centro de cortante).
-        Usa operaciones vectorizadas sobre todos los nodos y modos simultáneamente.
+        Convierte self.modes (DOFs centroidales) a self.modes_S (DOFs en el centro de corte).
         """
         n_nodes = self.model.nnodes
 
@@ -121,11 +120,11 @@ class StabilitySolver():
                        for n in range(n_nodes)])
 
         # Copia inicial de los modos (el giro y su derivada no cambian)
-        modes_SC = self.modes.copy()
-        modes_SC[dof_v, :]  -= zS[:, None] * self.modes[dof_t, :]  # Transformación v  : v_SC = v_G - zS * θ
-        modes_SC[dof_dv, :] -= zS[:, None] * self.modes[dof_dt, :] # Transformación v' : v'_SC ≈ v'_G - zS * θ'
+        modes_S = self.modes.copy()
+        modes_S[dof_v, :]  -= zS[:, None] * self.modes[dof_t, :]  # Transformación v  : v_S = v_C - zS * θ
+        modes_S[dof_dv, :] -= zS[:, None] * self.modes[dof_dt, :] # Transformación v' : v'_S = v'_C - zS * θ'
         
-        self.modes_SC = modes_SC
+        self.modes_S = modes_S
 
     def summary(self, n=1, ref=None):
         w = 48
@@ -143,4 +142,4 @@ class StabilitySolver():
 
     def plot(self, imode=0, scale=1.0, n_sec=2, curves=True):
         from pyltb.plotting import plot_buckling_mode
-        return plot_buckling_mode(self.model, self.mu_crs, self.modes_SC, imode, scale, n_sec, curves)
+        return plot_buckling_mode(self.model, self.mu_crs, self.modes_S, imode, scale, n_sec, curves)

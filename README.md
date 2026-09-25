@@ -181,8 +181,8 @@ it (e.g. `pos=3, ez=-0.05` → 5 cm below the top flange):
 |:----:|----------|-----------------|
 | `0`  | Centroid | `0` |
 | `1`  | Shear center | `zS` |
-| `2`  | Bottom flange | `-zG` |
-| `3`  | Top flange | `h - zG` |
+| `2`  | Bottom flange | `-zC` |
+| `3`  | Top flange | `h - zC` |
 
 ### In-plane restraints — `add_verax_restraints`
 

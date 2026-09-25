@@ -26,8 +26,6 @@ class StabilityModel():
         # cargas estatico
         self.nodal_data   = np.empty((0,8))
         self.loaded_nodes = [] # tags de nodos cargados
-        #self.nodal_loads = [] # cargas nodales
-        #self.loaded_elems = [] #tags
 
     def add_materials(self, materials): 
         self.materials = materials
@@ -96,7 +94,7 @@ class StabilityModel():
         elements_data : array-like — cada fila: [etype, mat_id, nodei, nodej]
         align : string
             Alineacion del eje de referencia local:
-                0 → centroide G(x)    — sin acoplamiento axial-flexión (default)
+                0 → centroide C(x)    — sin acoplamiento axial-flexión (default)
                 3 → fibra superior    — taper hacia abajo
                 2 → fibra inferior    — taper hacia arriba
         """
@@ -139,7 +137,7 @@ class StabilityModel():
             kdv : rigidez curvatura lateral    [F]    (v'-DOF)
             kt  : rigidez torsional            [F·L]  (θ-DOF)
             kdt : rigidez warping torsional    [F]    (θ'-DOF)
-            pos : pos. vertical, 0→G, 1→SC, 2→ala inf, 3→ala sup)
+            pos : pos. vertical, 0→C, 1→S, 2→ala inf, 3→ala sup)
             * la posicion es solo para la traslacion lateral
         """
         self.spring_nodes = list(springs_data[:, 0].astype(int))
@@ -152,7 +150,7 @@ class StabilityModel():
         Cargas puntuales nodales en coordenadas locales.
  
         Formato: [node, fxpos, fzpos, fxez, fzez, Fx, Fz, Mx]
-            fzpos : altura de Fz — 0→G, 1→SC, 2→ala inf, 3→ala sup
+            fzpos : altura de Fz — 0→C, 1→S, 2→ala inf, 3→ala sup
                     (usado en el problema de estabilidad, StabilitySolver)
             fxpos : altura de Fx — mismos códigos
                     (la corrección ΔM = Fx·ez la aplica StaticSolver
@@ -160,11 +158,11 @@ class StabilityModel():
             fxez, fzez : excentricidad de las cargas Fx y Fz respecto al eje de referencia local
             Fx, Fz, Mx : carga axial, vertical y momento nodal
         """
-        self.nodal_data   = np.vstack([self.nodal_data, nodal_loads_data])
-        self.loaded_nodes = list(nodal_loads_data[:,0].astype(int))
-        self.nloads_pos   = nodal_loads_data[:, 1:3].astype(int) # posiciones de Fx y Fz
-        self.nloads_rez   = nodal_loads_data[:, 3:5]             # z relativo a la pos. de Fx y Fz
-        self.nodal_loads  = nodal_loads_data[:, 5:]              # [Fx, Fz, Mx]
+        self.nodal_data        = np.vstack([self.nodal_data, nodal_loads_data])
+        self.loaded_nodes      = list(nodal_loads_data[:,0].astype(int))
+        self.nodal_loads_pos   = nodal_loads_data[:, 1:3].astype(int) # posiciones de Fx y Fz
+        self.nodal_loads_rez   = nodal_loads_data[:, 3:5]             # z relativo a la pos. de Fx y Fz
+        self.nodal_loads       = nodal_loads_data[:, 5:]              # [Fx, Fz, Mx]
         
 
     def add_elem_loads(self, elem_loads_data):
@@ -172,7 +170,7 @@ class StabilityModel():
         Cargas distribuidas de elemento en coordenadas locales.
  
         Formato: [id_elem, qxpos, qzpos, qxez, qzez, qxi, qzi, qxj, qzj]
-            qxpos : altura de qz — 0→G, 1→SC, 2→ala inf, 3→ala sup
+            qxpos : altura de qz — 0→C, 1→S, 2→ala inf, 3→ala sup
             qzpos : altura de qx — mismos códigos
             qxi, qzi : intensidades en nodo i (axial, transversal)
             qxj, qzj : intensidades en nodo j (axial, transversal)

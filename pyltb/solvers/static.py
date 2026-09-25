@@ -40,8 +40,8 @@ class StaticSolver():
                     continue
     
                 dof_Mx = self.model.avrx_dofs[node, 2]
-                pos    = self.model.nloads_pos[i, 0]
-                rez    = self.model.nloads_rez[i, 0]
+                pos    = self.model.nodal_loads_pos[i, 0]
+                rez    = self.model.nodal_loads_rez[i, 0]
                 sec    = self.model.sections[node]
                 fxez   = sec.z_from_ref(0, pos) + rez
                   
