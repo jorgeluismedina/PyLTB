@@ -31,12 +31,14 @@ def solve(coords, sections, edata, nodal_loads, align=0):
     return s1.max_vals(), s2.mu_crs[0]
  
  
+def delta(ref, val):
+    """Beyer (2015): Δ = (Ref - valor) / valor * 100."""
+    return (ref - val) / val * 100
+
+
 def print_row(label, mu, ref, ltb):
-    dlr = abs(ltb - ref) / ref * 100
-    dr  = abs(mu - ref) / ref * 100
-    dl  = abs(mu - ltb) / ltb * 100
-    print(f"  {label:>8}  {ref:>12.4f}  {ltb:>15.4f}  {dlr:>7.2f}%"
-          f"  {mu:>14.4f}  {dr:>7.2f}%  {dl:>10.2f}%")
+    print(f"  {label:>8}  {ref:>12.4f}  {ltb:>15.4f}  {delta(ref, ltb):>7.2f}%"
+          f"  {mu:>14.4f}  {delta(ref, mu):>7.2f}%  {delta(ltb, mu):>10.2f}%")
  
  
 # ── data ───────────────────────────────────────────────────────────────────────
@@ -49,7 +51,7 @@ sec_j = ISection_MS(h=0.6127*0.2,   bf1=0.15, bf2=0.15, tw=0.0095, tf1=0.0127, t
  
 ratios   = [0, 1, 2, 4]
 refs     = [1.979, 1.742, 1.475, 1.006]
-ltbeamns = [1.943, 1.722, 1.469, 1.010]
+ltbeamns = [1.944, 1.725, 1.472, 1.010] # programa
  
 coords   = np.linspace(0, L, nelems + 1)
 sections = interpolate_multiple_sections(sec_i, sec_j, coords / L)
@@ -61,8 +63,8 @@ edata    = np.array([[1, 0, e, e+1] for e in range(nelems)])
 print("\n" + "═" * 92)
 print("  Example 2  –  Cantilever tapered | combined N/Q tip loads  (L=4 m)")
 print("═" * 92)
-print(f"  {'r=N/Q':>8}  {'Reference':>12}  {'LTBeamN':>15}  {'ΔRef %':>8}"
-      f"  {'PyLTB':>14}  {'ΔRef %':>8}  {'ΔLTBeamN %':>11}")
+print(f"  {'r=N/Q':>8}  {'Reference':>12}  {'LTBeamN':>15}  {'Δ %':>8}"
+      f"  {'PyLTB':>14}  {'Δ %':>8}  {'ΔLTB %':>11}")
 print("  " + "─" * 88)
  
 for r, ref, ltb in zip(ratios, refs, ltbeamns):

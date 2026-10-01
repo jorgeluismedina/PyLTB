@@ -150,13 +150,19 @@ class ISection_MS:
 
     def compute_warping_inertia(self):
         # En esta funcion solo se toma en cuenta la contribucion de las alas
-        I_ratio = self.Izf1 * self.Izf2 / (self.Izf1 + self.Izf2)
-        hs = (self.zCf1 - self.zCf2)
-        self.Iw = I_ratio * hs**2
+        hs  = (self.zCf1 - self.zCf2)
+        Izf = self.Izf1 + self.Izf2
+        if Izf == 0:
+            # Sin alas (bf = 0 o tf = 0): rectangulo angosto, placa unica sin alabeo
+            self.Iw  = 0.0
+            self.af1 = self.af2 = hs / 2
+            return
+
+        self.Iw = self.Izf1 * self.Izf2 / Izf * hs**2
 
         # Distancia de los zC de las mesas al centro de corte
         # aT y aB según Ronagh (2000) Part I, eq. 83
-        self.af1 = hs * self.Izf2 / (self.Izf1 + self.Izf2) #aT
+        self.af1 = hs * self.Izf2 / Izf #aT
         self.af2 = hs - self.af1 # aB
 
     def compute_polar_radius(self):

@@ -4,6 +4,8 @@ Example 3  –  Simply supported bisymmetric double-tapered beam
               Mid-span point load at top flange
   full:  complete beam, 3 lengths
   sym:   half-beam with symmetric BCs, 3 lengths
+
+Δ = (Ref - value) / value * 100, the definition of Beyer (2015).
 """
  
  
@@ -20,7 +22,7 @@ from pyltb.solvers.stability import StabilitySolver
  
 def make_mesh_full(sec_min, sec_max, L, nelems):
     """Double-taper: min → max → min over the full span."""
-    nnods  = nelems + 1
+    nnods  = nelems + 1                      # nelems par: el nodo nelems//2 está en el centro
     coords = np.linspace(0, L, nnods)
     norm   = coords / L
     half   = nnods // 2
@@ -53,37 +55,39 @@ def solve(coords, sections, edata, vrest, lrest, nodal_loads):
     return s1.max_vals(), s2.mu_crs[0]
  
  
+def delta(ref, val):
+    return (ref - val) / val * 100
+
+
 def print_header(title):
     print("\n" + "═" * 92)
     print(f"  {title}")
     print("═" * 92)
-    print(f"  {'L [m]':>8}  {'Reference':>12}  {'LTBeamN':>15}  {'ΔRef %':>8}"
-          f"  {'PyLTB':>14}  {'ΔRef %':>8}  {'ΔLTBeamN %':>11}")
+    print(f"  {'L [m]':>8}  {'Reference':>12}  {'LTBeamN':>15}  {'Δ %':>8}"
+          f"  {'PyLTB':>14}  {'Δ %':>8}  {'ΔLTB %':>11}")
     print("  " + "─" * 88)
 
 
 def print_row(label, mu, ref, ltb):
-    dlr = abs(ltb - ref) / ref * 100
-    dr  = abs(mu - ref) / ref * 100
-    dl  = abs(mu - ltb) / ltb * 100
-    print(f"  {label:>8}  {ref:>12.4f}  {ltb:>15.4f}  {dlr:>7.2f}%"
-          f"  {mu:>14.4f}  {dr:>7.2f}%  {dl:>10.2f}%")
- 
- 
+    print(f"  {label:>8}  {ref:>12.4f}  {ltb:>15.4f}  {delta(ref, ltb):>7.2f}%"
+          f"  {mu:>14.4f}  {delta(ref, mu):>7.2f}%  {delta(ltb, mu):>10.2f}%")
+
+
 # ── data ───────────────────────────────────────────────────────────────────────
  
 sec_max = ISection_MS(h=0.60,      bf1=0.15, bf2=0.15, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0, r2=0, It_type="plates")
 sec_min = ISection_MS(h=0.60*0.4,  bf1=0.15, bf2=0.15, tw=0.0095, tf1=0.0127, tf2=0.0127, r1=0, r2=0, It_type="plates")
  
 Ls       = [6, 9, 12]
-refs     = [63.58, 30.55, 18.05]
-ltbeamns = [62.17, 29.97, 17.76]
+refs     = [63.58, 30.55, 18.05]   # Ansys (Beyer 2015)
+ltbeamns = [61.20, 29.65, 17.60]   # LTBeamN, programa
+dens     = 10                      # elementos por metro
  
 # ── Example 3 – full ───────────────────────────────────────────────────────────
  
 print_header("Example 3 (full)  –  S-S bisymmetric double-taper | mid-span Fz at top flange")
 for L, ref, ltb in zip(Ls, refs, ltbeamns):
-    nelems = int(10 * L / 2)
+    nelems = dens * L
     coords, sections, edata = make_mesh_full(sec_min, sec_max, L, nelems)
     vrest = np.array([[0, 1, 1, 0], [nelems, 0, 1, 0]])
     lrest = np.array([[0, 1, 0, 1, 0], [nelems, 1, 0, 1, 0]])
@@ -93,13 +97,12 @@ for L, ref, ltb in zip(Ls, refs, ltbeamns):
  
  
 # ── Example 3 – symmetric (half model) ────────────────────────────────────────
- 
-ltbeamns_sym = [61.20, 29.65, 17.60]
+
  
 print_header("Example 3 (sym)   –  half-model with symmetric BCs")
-for L, ref, ltb in zip(Ls, refs, ltbeamns_sym):
+for L, ref, ltb in zip(Ls, refs, ltbeamns):
     L_half = L / 2
-    nelems = int(10 * L_half)
+    nelems = int(dens * L_half)
     coords, sections, edata = make_mesh_half(sec_min, sec_max, L_half, nelems)
     vrest = np.array([[0, 0, 1, 0], [nelems, 1, 0, 1]])
     lrest = np.array([[0, 1, 0, 1, 0], [nelems, 0, 1, 0, 1]])
@@ -107,4 +110,6 @@ for L, ref, ltb in zip(Ls, refs, ltbeamns_sym):
     _, mu = solve(coords, sections, edata, vrest, lrest, loads)
     print_row(f"{L}", mu, ref, ltb)
  
-print("\n" + "═" * 92 + "\n")
+print("\n  Δ %    = (Ref. - valor) / valor * 100, como en Beyer (2015)")
+print("  ΔLTB % = (LTBeamN - PyLTB) / PyLTB * 100")
+print("═" * 92 + "\n")

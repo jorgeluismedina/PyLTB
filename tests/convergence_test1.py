@@ -1,4 +1,11 @@
+"""
+Test de convergencia: viga simplemente apoyada en flexión pura
+Sección I doblemente simétrica, momentos iguales y opuestos M0 en los extremos (momento uniforme).
+Apoyos de horquilla: v = θ = 0 en ambos extremos; v_x y θ_x libres (alabeo libre).
 
+Solución exacta (Timoshenko y Gere 1961, cap. 6):
+    M_cr = (π/L) √( EI_z GI_t (1 + π² EI_w / (GI_t L²)) ),   μ_cr = M_cr / M0
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 from pyltb.model import StabilityModel
@@ -12,7 +19,7 @@ material = Material(E=2.1e11, nu=0.3, rho=1.0)
  
 section = ISection_MS(h=0.3, bf1=0.15, bf2=0.15,
                       tw=0.015, tf1=0.015, tf2=0.015,
-                      r1=0.01, r2=0.01)
+                      r1=0.0, r2=0.0)
  
 L = 5.0   # [m]
 M0 = 1000.0  # [Nm] momento de flexión pura
@@ -90,7 +97,7 @@ for n in mesh_sizes:
     mu_tap.append(mu_t)
     err_u = abs(mu_u - mu_cr_ana) / mu_cr_ana * 100
     err_t = abs(mu_t - mu_cr_ana) / mu_cr_ana * 100
-    print(f"{n:>6}  {mu_u:>12.6f}  {err_u:>10.4f}  {mu_t:>12.6f}  {err_t:>10.4f}")
+    print(f"{n:>6}  {mu_u:>12.6f}  {err_u:>10.2e}  {mu_t:>12.6f}  {err_t:>10.2e}")
  
 mu_uni = np.array(mu_uni)
 mu_tap = np.array(mu_tap)
@@ -139,6 +146,6 @@ ax.legend(loc='upper right', bbox_to_anchor=(0.95, 0.95), fancybox=False, edgeco
 ax.grid(True, alpha=0.3, which="both")
  
 plt.tight_layout()
-plt.savefig(r"D:\Maestria UFRGS\Tesis maestria\Seminario\fig\convergence_plot1.pdf", dpi=300)
+plt.savefig(r"D:\Maestria UFRGS\Tesis maestria\Disertacion\fig\convergence_plot1.pdf", dpi=300)
 plt.show()
 print("\nDone.")

@@ -43,8 +43,8 @@ def print_header(title, param_label):
     print("\n" + "═" * 92)
     print(f"  {title}")
     print("═" * 92)
-    print(f"  {param_label:>8}  {'Reference':>12}  {'LTBeamN':>15}  {'ΔRef %':>8}"
-          f"  {'PyLTB':>14}  {'ΔRef %':>8}  {'ΔLTBeamN %':>11}")
+    print(f"  {param_label:>8}  {'Reference':>12}  {'LTBeamN':>15}  {'Δ %':>8}"
+          f"  {'PyLTB':>14}  {'Δ %':>8}  {'ΔLTB %':>11}")
     print("  " + "─" * 88)
 
 def print_header2(title, param_label):
@@ -52,20 +52,21 @@ def print_header2(title, param_label):
     print(f"  {title}")
     print("═" * 92)
     print(f"  {param_label:>8}  {'LTBeamN':>15}"
-          f"  {'PyLTB':>14}  {'ΔLTBeamN %':>11}")
+          f"  {'PyLTB':>14}  {'ΔLTB %':>11}")
     print("  " + "─" * 88)
 
 
+def delta(ref, val):
+    """Beyer (2015): Δ = (Ref - valor) / valor * 100."""
+    return (ref - val) / val * 100
+
+
 def print_row(label, mu, ref, ltb):
-    dlr = abs(ltb - ref) / ref * 100
-    dr  = abs(mu - ref) / ref * 100
-    dl  = abs(mu - ltb) / ltb * 100
-    print(f"  {label:>8}  {ref:>12.4f}  {ltb:>15.4f}  {dlr:>7.2f}%"
-          f"  {mu:>14.4f}  {dr:>7.2f}%  {dl:>10.2f}%")
+    print(f"  {label:>8}  {ref:>12.4f}  {ltb:>15.4f}  {delta(ref, ltb):>7.2f}%"
+          f"  {mu:>14.4f}  {delta(ref, mu):>7.2f}%  {delta(ltb, mu):>10.2f}%")
 
 def print_row2(label, mu, ltb):
-    dl = abs(mu - ltb) / ltb * 100
-    print(f"  {label:>8}  {ltb:>15.4f}  {mu:>14.4f}  {dl:>10.2f}%")
+    print(f"  {label:>8}  {ltb:>15.4f}  {mu:>14.4f}  {delta(ltb, mu):>10.2f}%")
 
 # ── data ───────────────────────────────────────────────────────────────────────
  
@@ -81,7 +82,7 @@ sec_ms_j = ISection_MS(h=0.305, bf1=0.10, bf2=0.18, tw=0.008, tf1=0.010, tf2=0.0
 # ── Example 1a ─────────────────────────────────────────────────────────────────
  
 refs_1a     = [173.30, 44.55, 22.69, 13.95,  9.31]
-ltbeamns_1a = [171.87, 44.23, 22.50, 13.82,  9.22]
+ltbeamns_1a = [171.87, 44.23, 22.50, 13.82,  9.22] # programa
  
 print_header("Example 1a  –  bisymmetric tapered cantilever | Fz at top flange", "L [m]")
 for L, ref, ltb in zip(Ls, refs_1a, ltbeamns_1a):
@@ -95,7 +96,7 @@ for L, ref, ltb in zip(Ls, refs_1a, ltbeamns_1a):
 # ── Example 1b ─────────────────────────────────────────────────────────────────
  
 refs_1b     = [77.21, 26.76, 15.08,  9.680,  6.610]
-ltbeamns_1b = [75.54, 26.55, 14.93,  9.572,  6.537]
+ltbeamns_1b = [75.54, 26.55, 14.93,  9.572,  6.537] # programa
  
 print_header("Example 1b  –  monosymmetric tapered cantilever | Fz at top flange", "L [m]")
 for L, ref, ltb in zip(Ls, refs_1b, ltbeamns_1b):
