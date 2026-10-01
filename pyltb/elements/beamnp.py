@@ -44,8 +44,7 @@ class BeamNP(Beam):
         # Inercias de taper (Kitipornchair y Trahair 1975)
         I_psi  = 4 * (self.daf1**2 * gsec.Izf1 + self.daf2**2 * gsec.Izf2)
         I_wpsi = 2 * (self.daf1 * gsec.af1 * gsec.Izf1 + self.daf2 * gsec.af2 * gsec.Izf2) 
-        I_ypsi = 2 * (self.daf2 * gsec.Izf2 - self.daf1 * gsec.Izf1) # derivado usando la cinematica de beyer2015
-        #I_ypsi = 2 * (self.daf1 * gsec.Izf1 - self.daf2 * gsec.Izf2) # original
+        I_ypsi = 2 * (self.daf2 * gsec.Izf2 - self.daf1 * gsec.Izf1) # derivado con giro antihorario positivo
         
         gsec.update_tapered_inertias(I_psi, I_wpsi, I_ypsi)
         return gsec
