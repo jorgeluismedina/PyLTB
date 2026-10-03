@@ -140,7 +140,7 @@ python tests/uniform_monosym2.py
 </p>
 
 ```bash
-python tests/example1a.py
+python tests/beyer2015/example1a.py
 ```
 
 ### Simple supported double tapered beam — point load at center
@@ -150,7 +150,7 @@ python tests/example1a.py
 </p>
 
 ```bash
-python tests/example4.py
+python tests/beyer2015/example4.py
 ```
 
 ---
