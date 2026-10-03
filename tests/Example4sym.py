@@ -26,7 +26,7 @@ idx = 0
 Ls  = np.array([6, 9, 12]) / 2 #[m]
 L   = Ls[idx]
 
-nelems = int(10 * L)
+nelems = int(4 * L)
 nnods  = nelems + 1
 
 # Coordenadas de nodos
@@ -108,6 +108,6 @@ for key, (_, static, stabi) in results.items():
 # ── Plots ─────────────────────────────────────────────────────────────────
 results["e(SC)"][1].plot()
 for key, (_, static, stabi) in results.items():
-    fig, _ = stabi.plot(imode=0, scale=0.1)
+    fig, _ = stabi.plot(imode=0, scale=0.20)
     fig.suptitle(key)
 plt.show()

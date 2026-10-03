@@ -27,7 +27,7 @@ idx = 0
 Ls  = np.array([6, 9, 12]) / 2 #[m]
 L   = Ls[idx]
 
-nelems = int(10 * L)
+nelems = int(4 * L)
 nnods  = nelems + 1
 
 # Coordenadas de nodos
