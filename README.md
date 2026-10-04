@@ -130,7 +130,7 @@ The following examples show the first buckling mode of three beam-columns with d
 </p>
 
 ```bash
-python tests/uniform_monosym2.py
+python tests/ltbeamn_owns/uniform_monosym2.py
 ```
 
 ### Cantilever tapered beam — point load at tip

@@ -1,10 +1,10 @@
 """
 Test de convergencia: voladizo acartelado, carga puntual P en el extremo libre sobre el ala superior
 Geometría del ejemplo 1 de Beyer et al. (2015) con L = 6 m: canto lineal de 610 a 305 mm, alas
-constantes de 10 mm, alma de 8 mm. El ala superior es recta (align=3), así que el eje de centros
-de corte también lo es.
-  1a: alas de 180 mm (bisimétrica)          → integrandos polinómicos en x
-  1b: alas de 100 y 180 mm (monosimétrica)  → z_C y β_z no son polinomios en x
+constantes de 10 mm, alma de 8 mm. El ala superior es recta (align=3).
+  1a: alas de 180 mm (bisimétrica)          → integrandos polinómicos en x; ejes de C y S rectos
+  1b: alas de 100 y 180 mm (monosimétrica)  → z_C y β_z no son polinomios en x; ejes de C y S
+      levemente curvos, y el de S se aproxima con la secante en cada elemento
 
 Sin solución analítica. Se separan los dos errores numéricos de los elementos BeamNP:
   1. Cuadratura: 4 elementos y reglas de Gauss-Legendre de 2 a 8 puntos
@@ -125,37 +125,38 @@ ng = np.array(gauss_points)
 ns = np.array(mesh_sizes)
 
 # ── Plots ─────────────────────────────────────────────────────────────────────
-plt.style.use(['science','notebook','grid'])
-fig, axes = plt.subplots(1, 2, figsize=(13, 5))
-fs_axes = 15
-fs_ticks = 13
-fs_legend = 12
+plt.style.use(["science", "notebook", "grid",
+               {"font.family": "serif", "font.serif": ["cmr10"], "mathtext.fontset": "cm",
+                "axes.formatter.use_mathtext": True}])
+fs_axes, fs_ticks, fs_legend = 16, 14, 12
+n_ticks = [2, 5, 10, 20, 50, 100]
+fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
 
 # Error de cuadratura vs puntos de Gauss
 ax = axes[0]
 ax.plot(ng, err_gauss["1a"], "o-", color="blue", lw=1.5, ms=6, label="Doubly symmetric (1a)")
-ax.plot(ng, err_gauss["1b"], "s-", color="red",  lw=1.5, ms=6, label="Singly symmetric (1b)")
+ax.plot(ng, err_gauss["1b"], "s--", color="red", lw=1.5, ms=8, mfc="none", mew=1.2, label="Singly symmetric (1b)")
 ax.set_xlabel("Number of Gauss points", fontsize=fs_axes)
-ax.set_ylabel(r"Error  [%]", fontsize=fs_axes)
 ax.set_xticks(gauss_points)
-ax.set_yscale("log")
-ax.tick_params(axis='both', which='major', labelsize=fs_ticks)
-ax.legend(loc='upper right', bbox_to_anchor=(0.95, 0.95), fancybox=False, edgecolor='black', fontsize=fs_legend)
-ax.grid(True, alpha=0.3, which="both")
 
 # Error de discretización vs n
 ax = axes[1]
 ax.plot(ns, err_mesh["1a"], "o-", color="blue", lw=1.5, ms=6, label="Doubly symmetric (1a)")
-ax.plot(ns, err_mesh["1b"], "s-", color="red",  lw=1.5, ms=6, label="Singly symmetric (1b)")
-ax.set_xlabel("Number of elements  $n$", fontsize=fs_axes)
-ax.set_ylabel(r"Error  [%]", fontsize=fs_axes)
+ax.plot(ns, err_mesh["1b"], "s--", color="red", lw=1.5, ms=8, mfc="none", mew=1.2, label="Singly symmetric (1b)")
+ax.set_xlabel("Number of elements $n$", fontsize=fs_axes)
 ax.set_xscale("log")
-ax.set_yscale("log")
-ax.tick_params(axis='both', which='major', labelsize=fs_ticks)
-ax.legend(loc='upper right', bbox_to_anchor=(0.95, 0.95), fancybox=False, edgecolor='black', fontsize=fs_legend)
-ax.grid(True, alpha=0.3, which="both")
+ax.set_xticks(n_ticks, labels=[str(n) for n in n_ticks])
+ax.tick_params(axis="x", which="minor", labelbottom=False)
+
+for ax in axes:
+    ax.set_ylabel("Error [%]", fontsize=fs_axes)
+    ax.set_yscale("log")
+    ax.tick_params(axis="both", which="major", labelsize=fs_ticks)
+    ax.legend(loc="upper right", bbox_to_anchor=(0.95, 0.95), fancybox=False, edgecolor="black",
+              fontsize=fs_legend)
+    ax.grid(True, alpha=0.3)
 
 plt.tight_layout()
-#plt.savefig(r"D:\Maestria UFRGS\Tesis maestria\Disertacion\fig\convergence_plot3.pdf", dpi=300)
+plt.savefig(r"D:\Maestria UFRGS\Tesis maestria\Disertacion\fig\convergence_plot3.pdf", dpi=300, bbox_inches="tight")
 plt.show()
 print("\nDone.")
