@@ -89,11 +89,14 @@ class ISection_MS:
         self.Iz = self.Izf1 + self.Izf2 + self.Izw + 2*self.Izr1 + 2*self.Izr2
 
     def compute_shear_center(self): # respecto del centroide
-        self.zS = (self.Izf1 * self.zf1 + 
-                   self.Izf2 * self.zf2 +
-                   self.Izw * self.zw +
-                   2 * self.Izr1 * self.zr1 +
-                   2 * self.Izr2 * self.zr2) / self.Iz
+        # Solo las alas (Kitipornchai y Trahair 1975), por coherencia con I_w, a_T y a_B:
+        # un único centro de corte en toda la formulación
+        Izf = self.Izf1 + self.Izf2
+        if Izf == 0:
+            # Sin alas (rectangulo angosto): centro de corte en el eje del alma
+            self.zS = self.zw
+            return
+        self.zS = (self.Izf1 * self.zf1 + self.Izf2 * self.zf2) / Izf
 
     def It_villette(self):
         """ Villette (2011) - formula que usa LTBeamN """

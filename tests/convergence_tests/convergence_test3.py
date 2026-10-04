@@ -3,8 +3,8 @@ Test de convergencia: voladizo acartelado, carga puntual P en el extremo libre s
 Geometría del ejemplo 1 de Beyer et al. (2015) con L = 6 m: canto lineal de 610 a 305 mm, alas
 constantes de 10 mm, alma de 8 mm. El ala superior es recta (align=3).
   1a: alas de 180 mm (bisimétrica)          → integrandos polinómicos en x; ejes de C y S rectos
-  1b: alas de 100 y 180 mm (monosimétrica)  → z_C y β_z no son polinomios en x; ejes de C y S
-      levemente curvos, y el de S se aproxima con la secante en cada elemento
+  1b: alas de 100 y 180 mm (monosimétrica)  → z_C y β_z no son polinomios en x; eje de C curvo,
+      eje de S recto (z_S solo de las alas, constantes)
 
 Sin solución analítica. Se separan los dos errores numéricos de los elementos BeamNP:
   1. Cuadratura: 4 elementos y reglas de Gauss-Legendre de 2 a 8 puntos
@@ -157,6 +157,6 @@ for ax in axes:
     ax.grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.savefig(r"D:\Maestria UFRGS\Tesis maestria\Disertacion\fig\convergence_plot3.pdf", dpi=300, bbox_inches="tight")
+#plt.savefig(r"D:\Maestria UFRGS\Tesis maestria\Disertacion\fig\convergence_plot3.pdf", dpi=300, bbox_inches="tight")
 plt.show()
 print("\nDone.")

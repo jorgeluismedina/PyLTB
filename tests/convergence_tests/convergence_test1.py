@@ -138,6 +138,6 @@ for ax in axes:
     ax.grid(True, alpha=0.3)
 
 plt.tight_layout()
-plt.savefig(r"D:\Maestria UFRGS\Tesis maestria\Disertacion\fig\convergence_plot1.pdf", dpi=300, bbox_inches="tight")
+#plt.savefig(r"D:\Maestria UFRGS\Tesis maestria\Disertacion\fig\convergence_plot1.pdf", dpi=300, bbox_inches="tight")
 plt.show()
 print("\nDone.")
