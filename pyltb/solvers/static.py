@@ -1,7 +1,6 @@
 
 import numpy as np
 from scipy.linalg import cho_factor, cho_solve
-from shapely import node
 from pyltb.plotting import plot_diagrams
 
 

@@ -225,9 +225,10 @@ model.add_nodal_loads(np.array([
 ]))
 ```
 
-`fxpos`/`fzpos` are height codes for `Fx`/`Fz`, `fxez`/`fzez` their relative eccentricities,
-`Fx` positive in tension, `Fz` negative downwards, `Mx` the nodal bending moment.
-An axial force applied off the reference axis is converted into an equivalent nodal moment.
+`fxpos`/`fzpos` are height codes for `Fx`/`Fz`, `fxez`/`fzez` their eccentricities from those
+points, `Fx` positive in tension, `Fz` negative downwards, `Mx` the nodal bending moment.
+An axial force applied off the centroid is converted into an equivalent nodal moment.
+Successive calls add up; `model.clear_loads()` removes all nodal and element loads.
 
 ### Distributed element loads — `add_elem_loads`
 

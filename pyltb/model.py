@@ -147,22 +147,23 @@ class StabilityModel():
 
     def add_nodal_loads(self, nodal_loads_data):
         """
-        Cargas puntuales nodales en coordenadas locales.
- 
+        Cargas puntuales nodales en coordenadas locales. Cada llamada se suma a las
+        anteriores; clear_loads las borra.
+
         Formato: [node, fxpos, fzpos, fxez, fzez, Fx, Fz, Mx]
-            fzpos : altura de Fz — 0→C, 1→S, 2→ala inf, 3→ala sup
+            fxpos : altura de Fx — 0→C, 1→S, 2→ala inf, 3→ala sup
+                    (StaticSolver aplica el momento nodal -Fx·e, con e medida
+                    desde C en la sección del nodo)
+            fzpos : altura de Fz — mismos códigos
                     (usado en el problema de estabilidad, StabilitySolver)
-            fxpos : altura de Fx — mismos códigos
-                    (la corrección ΔM = Fx·ez la aplica StaticSolver
-                    en assemble_verax_F, con la geometría del elemento conectado)
-            fxez, fzez : excentricidad de las cargas Fx y Fz respecto al eje de referencia local
+            fxez, fzez : excentricidad de Fx y Fz respecto del punto que indican fxpos y fzpos
             Fx, Fz, Mx : carga axial, vertical y momento nodal
         """
-        self.nodal_data        = np.vstack([self.nodal_data, nodal_loads_data])
-        self.loaded_nodes      = list(nodal_loads_data[:,0].astype(int))
-        self.nodal_loads_pos   = nodal_loads_data[:, 1:3].astype(int) # posiciones de Fx y Fz
-        self.nodal_loads_rez   = nodal_loads_data[:, 3:5]             # z relativo a la pos. de Fx y Fz
-        self.nodal_loads       = nodal_loads_data[:, 5:]              # [Fx, Fz, Mx]
+        self.nodal_data      = np.vstack([self.nodal_data, nodal_loads_data])
+        self.loaded_nodes    = list(self.nodal_data[:, 0].astype(int))
+        self.nodal_loads_pos = self.nodal_data[:, 1:3].astype(int) # posiciones de Fx y Fz
+        self.nodal_loads_rez = self.nodal_data[:, 3:5]             # z relativo a la pos. de Fx y Fz
+        self.nodal_loads     = self.nodal_data[:, 5:]              # [Fx, Fz, Mx]
         
 
     def add_elem_loads(self, elem_loads_data):
@@ -170,8 +171,11 @@ class StabilityModel():
         Cargas distribuidas de elemento en coordenadas locales.
  
         Formato: [id_elem, qxpos, qzpos, qxez, qzez, qxi, qzi, qxj, qzj]
-            qxpos : altura de qz — 0→C, 1→S, 2→ala inf, 3→ala sup
-            qzpos : altura de qx — mismos códigos
+            qxpos : altura de qx — 0→C, 1→S, 2→ala inf, 3→ala sup
+                    (momento repartido -qx·e en el paso estático)
+            qzpos : altura de qz — mismos códigos
+                    (usado en el problema de estabilidad, StabilitySolver)
+            qxez, qzez : excentricidad de qx y qz respecto del punto que indican qxpos y qzpos
             qxi, qzi : intensidades en nodo i (axial, transversal)
             qxj, qzj : intensidades en nodo j (axial, transversal)
         """
@@ -193,6 +197,7 @@ class StabilityModel():
         self.loaded_nodes = []
         for elem in self.elements:
             elem.loads[:] = 0.0
+            elem.qx_loads.clear()
             elem.qz_loads.clear()
 
 

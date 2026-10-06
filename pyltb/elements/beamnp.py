@@ -242,6 +242,7 @@ class BeamNP(Beam):
 
     def add_loads(self, qxpos, qzpos, qxrz, qzrz, qxi, qzi, qxj, qzj):
         """Acumula una carga distribuida en coordenadas locales."""
+        self.qx_loads.append((int(qxpos), qxrz, qxi, qxj))
         self.qz_loads.append((int(qzpos), qzrz, qzi, qzj))
 
         # excentricidad positiva (+z) y carga axial positiva (traccion) generan momentos negativos
