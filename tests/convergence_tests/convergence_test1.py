@@ -82,7 +82,7 @@ def run_model(nelems, etype):
  
  
 # ── Estudio de convergencia ───────────────────────────────────────────────────
-mesh_sizes = [2, 4, 6, 8, 10, 15, 20, 30, 50, 75, 100]
+mesh_sizes = [2, 4, 6, 8, 10, 15, 20, 30]
 #mesh_sizes = [2, 4, 6, 8, 10, 15, 20]
  
 mu_uni, mu_tap = [], []
@@ -110,7 +110,7 @@ plt.style.use(["science", "notebook", "grid",
                {"font.family": "serif", "font.serif": ["cmr10"], "mathtext.fontset": "cm",
                 "axes.formatter.use_mathtext": True}])
 fs_axes, fs_ticks, fs_legend = 16, 14, 12
-n_ticks = [2, 5, 10, 20, 50, 100]
+n_ticks = [2, 5, 10, 20, 30]
 fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
 
 # μ_cr vs n

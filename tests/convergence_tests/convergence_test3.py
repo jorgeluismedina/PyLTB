@@ -9,7 +9,7 @@ constantes de 10 mm, alma de 8 mm. El ala superior es recta (align=3).
 Sin solución analítica. Se separan los dos errores numéricos de los elementos BeamNP:
   1. Cuadratura: 4 elementos y reglas de Gauss-Legendre de 2 a 8 puntos
      (numpy.polynomial.legendre.leggauss). Referencia: la regla de 12 puntos.
-  2. Discretización: la regla de 4 puntos de PyLTB y de 2 a 100 elementos.
+  2. Discretización: la regla de 4 puntos de PyLTB y de 2 a 30 elementos.
      Referencia: 200 elementos.
 """
 import numpy as np
@@ -107,7 +107,7 @@ for i, g in enumerate(gauss_points):
 
 
 # ── 2. Discretización: regla de 4 puntos, malla creciente ─────────────────────
-mesh_sizes = [2, 4, 6, 8, 10, 15, 20, 30, 50, 75, 100]
+mesh_sizes = [2, 4, 6, 8, 10, 15, 20, 30]
 
 ref_mesh = {c: run_model(c, 200) for c in sections}
 mu_mesh = {c: [run_model(c, n) for n in mesh_sizes] for c in sections}
@@ -129,7 +129,7 @@ plt.style.use(["science", "notebook", "grid",
                {"font.family": "serif", "font.serif": ["cmr10"], "mathtext.fontset": "cm",
                 "axes.formatter.use_mathtext": True}])
 fs_axes, fs_ticks, fs_legend = 16, 14, 12
-n_ticks = [2, 5, 10, 20, 50, 100]
+n_ticks = [2, 5, 10, 20, 30]
 fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
 
 # Error de cuadratura vs puntos de Gauss
